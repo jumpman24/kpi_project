@@ -9,10 +9,5 @@ class Rank(BaseModel):
         'abbreviate',
     )
 
-    def __init__(self, id, name, abbreviate):
-        self.id = id
-        self.name = name
-        self.abbreviate = abbreviate
-
     def __str__(self):
-        return f"{self.abbreviate}"
+        return f"{self.name}"

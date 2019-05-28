@@ -3,3 +3,7 @@ from .country import Country
 from .city import City
 from .rank import Rank
 from .national_rank import NationalRank
+from .player import Player
+from .tournament import Tournament
+from .participant import Participant
+from .pairing import Pairing
