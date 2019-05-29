@@ -1,0 +1,65 @@
+body {
+	background-color: #eff4ef;
+	text-align: center;
+    align-self: center;
+    vertical-align: baseline;
+    font-family: "Cambria", sans-serif;
+	margin-top: 60px;
+	margin-bottom: 20px;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+h1 {
+	color: black;
+	font-family: "Georgia", sans-serif;
+	font-weight: bold;
+	margin: 5px;
+}
+
+td, th {
+	padding: 5px 5px;
+}
+
+.ugf-banner img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+.navbar-toggler {
+	top: 10px;
+}
+
+.navbar-toggler-icon:before {
+	content: "\2630";
+}
+.navbar-toggler-right {
+    position: absolute;
+    right: 1rem;
+}
+
+#suggest {
+	display: block;
+	padding: 6px;
+	border: 1px solid #ccc;
+	background: #fff;
+	position: absolute;
+	z-index: 100;
+}
+#suggest div:hover {
+	background: #999;
+	color: #fff;
+}
+
+.suggest-input {
+	display: none;
+	margin: 0 auto;
+
+}
+
+@media (min-width: 768px) {
+	.navbar-toggleable-sm .navbar-toggler {
+			display: none;
+	}
+}

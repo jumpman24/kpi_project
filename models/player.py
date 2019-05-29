@@ -19,24 +19,17 @@ class Player(BaseModel):
     def __str__(self):
         return f"{self.last_name} {self.first_name}"
 
-    @staticmethod
-    def get_player_info(*ids):
-        id_string = ', '.join([str(id) for id in ids])
+    @classmethod
+    def info(cls):
         query = (
-            f"SELECT p.last_name, p.first_name, p.PIN, p.rating, c.name, r.name, nr.name "
-            f"FROM `player` as p "
-            f"INNER JOIN `city` as c "
+            f"SELECT p.last_name, p.first_name, p.rating, c.name, r.name, nr.name, p.PIN "
+            f"FROM player as p "
+            f"INNER JOIN city as c "
             f"ON p.city_id=c.id "
             f"INNER JOIN `rank` as r "
             f"ON p.rank_id=r.id "
-            f"INNER JOIN `national_rank` as nr "
+            f"INNER JOIN national_rank as nr "
             f"ON p.national_rank_id=nr.id "
-            f"WHERE p.id IN ({id_string})"
         )
 
-        return mysql_execute(query)
-
-    def add_new_player(self, PIN, last_name, first_name, rating, country_name, city_name, rank_abbreviate,
-            national_rank_abbreviate, is_active):
-        country = Country.get_by_column_value('name', country_name)
-        city = City.get_by_column_value('name', city_name)
+        return cls.execute_query(query)
