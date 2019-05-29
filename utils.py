@@ -15,12 +15,16 @@ def mysql_execute(query):
     connection = mysql.connector.connect(**MYSQL_CONFIG)
     cursor = connection.cursor()
 
+    print(query)
     cursor.execute(query)
 
     results = []
     for row in cursor:
         results.append(row)
 
+    connection.commit()
+
     cursor.close()
+    connection.close()
 
     return results
