@@ -14,6 +14,12 @@ class BaseModel:
         return mysql_execute(query)
 
     @classmethod
+    def get_columns(cls, *columns):
+        query = f"SELECT {', '.join(columns)} FROM {cls.table_name}"
+
+        return cls.execute_query(query)
+
+    @classmethod
     def get_by_column_value(cls, column, value):
         query = (f"SELECT {', '.join(cls.columns)} "
                  f"FROM {cls.table_name} "

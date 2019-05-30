@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template
-from models import Player
-from utils import render_table
+from flask import Blueprint, render_template, request, redirect
+from models import Player, City
+from utils import render_table, render_select
 
 bp = Blueprint('players', __name__, url_prefix='/players')
 
@@ -15,3 +15,13 @@ def players():
     column_names = ['№ з/п', 'Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN']
     table = render_table(column_names, table_data)
     return render_template('players.html', player_list=table)
+
+
+@bp.route('/add', methods=['GET', 'POST'])
+def add_player():
+    if request.method == 'POST':
+        return redirect('/players')
+
+    city_data = City.get_columns('id', 'name')
+    cities = render_select('city', city_data)
+    return render_template('add_player.html', cities=cities)

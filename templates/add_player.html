@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Player</title>
+    <title>Add player</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}" />
 </head>
 <body>
 <div>
     <a href="/">Index</a>
-    <a href="/players/add">Add player</a>
     <br>
 </div>
 <div class="table-container">
-    {{ player_list | safe }}
+    <form action="/players/add" method="post">
+        {{ cities | safe }}
+        <p><input type="submit"></p>
+    </form>
 </div>
 </body>
 </html>

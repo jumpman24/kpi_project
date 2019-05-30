@@ -33,3 +33,11 @@ def render_table(column_names, rows, table_attrs=None, header_attrs=None, row_at
         table_data.append(make_table_row(row, row_attrs))
 
     return '\n'.join([f'<table{attrs}>', '\n'.join(table_data), '</table>'])
+
+
+def render_select(name, values):
+    data = []
+    for idx, value in values:
+        data.append(f'<option value="{idx}">{value}</option>')
+
+    return '\n'.join([f'<select name={name}>', '\n'.join(data), '</select>'])
