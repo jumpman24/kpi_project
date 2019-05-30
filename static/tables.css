@@ -26,6 +26,13 @@
     color: inherit;
 }
 
+.ugd_table td {
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
 .ugd_table th {
     text-align: center;
     background: darkgreen;

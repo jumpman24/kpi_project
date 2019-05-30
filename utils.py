@@ -1,30 +1,35 @@
-import mysql.connector
-import os
+def make_attrs(**attrs):
+    data = []
+    for key, value in attrs.items():
+        data.append(f'{key}="{value}"')
+
+    if data:
+        return ' ' + ' '.join(data)
+
+    return ''
 
 
-MYSQL_CONFIG = {
-    'user': 'is8204',
-    'password': os.environ.get('MYSQL_PASSWORD'),
-    'host': 'zanner.org.ua',
-    'port': '33321',
-    'database': 'is8204',
-}
+def make_table_header(values, header_attrs):
+    attrs = make_attrs(**header_attrs)
+    body = [f"<th{attrs}>{value}</th>" for value in values]
+    body_string = '\n'.join(body)
+    return '\n'.join(['<tr>', body_string, '</tr>'])
 
 
-def mysql_execute(query):
-    connection = mysql.connector.connect(**MYSQL_CONFIG)
-    cursor = connection.cursor()
+def make_table_row(values, row_attrs):
+    attrs = make_attrs(**row_attrs)
+    body = [f"<td{attrs}>{value}</td>" for value in values]
+    body_string = '\n'.join(body)
+    return '\n'.join(['<tr>', body_string, '</tr>'])
 
-    print(query)
-    cursor.execute(query)
 
-    results = []
-    for row in cursor:
-        results.append(row)
+def render_table(column_names, rows, table_attrs=None, header_attrs=None, row_attrs=None):
+    table_attrs = table_attrs or {'class': 'ugd_table'}
+    header_attrs = header_attrs or {}
+    row_attrs = row_attrs or {}
+    attrs = make_attrs(**table_attrs)
+    table_data = [make_table_header(column_names, header_attrs)]
+    for row in rows:
+        table_data.append(make_table_row(row, row_attrs))
 
-    connection.commit()
-
-    cursor.close()
-    connection.close()
-
-    return results
+    return '\n'.join([f'<table{attrs}>', '\n'.join(table_data), '</table>'])

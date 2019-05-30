@@ -1,5 +1,5 @@
 from models import BaseModel, Country, City
-from utils import mysql_execute
+from database import mysql_execute
 
 
 class Player(BaseModel):
@@ -22,13 +22,19 @@ class Player(BaseModel):
     @classmethod
     def info(cls):
         query = (
-            f"SELECT p.last_name, p.first_name, p.rating, c.name, r.name, nr.name, p.PIN "
+            f"SELECT "
+            f"CONCAT(p.last_name, ' ', p.first_name), "
+            f"COALESCE(c.name, ''), "
+            f"COALESCE(p.rating, ''), "
+            f"COALESCE(r.name, ''), "
+            f"COALESCE(nr.abbreviate, ''), "
+            f"COALESCE(p.PIN, '') "
             f"FROM player as p "
-            f"INNER JOIN city as c "
+            f"LEFT JOIN city as c "
             f"ON p.city_id=c.id "
-            f"INNER JOIN `rank` as r "
+            f"LEFT JOIN `rank` as r "
             f"ON p.rank_id=r.id "
-            f"INNER JOIN national_rank as nr "
+            f"LEFT JOIN national_rank as nr "
             f"ON p.national_rank_id=nr.id "
         )
 

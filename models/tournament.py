@@ -1,5 +1,5 @@
 from models import BaseModel
-from utils import mysql_execute
+from database import mysql_execute
 
 
 class Tournament(BaseModel):
