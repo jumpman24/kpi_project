@@ -12,6 +12,10 @@ input, select, textarea{
 label {
   padding: 12px 12px 12px 0;
   display: inline-block;
+  float: left;
+  width: 25%;
+  margin-top: 6px;
+
 }
 
 /* Style the submit button */
@@ -26,7 +30,10 @@ input[type=submit] {
 }
 
 /* Style the container */
-.container {
+.form-container {
+  display: inline-table;
+  max-width: 1000px;
+  min-width: 320px;
   border-radius: 5px;
   background-color: #f2f2f2;
   padding: 20px;
@@ -41,7 +48,7 @@ input[type=submit] {
 
 /* Floating column for inputs: 75% width */
 .col-75 {
-  float: left;
+  float: right;
   width: 75%;
   margin-top: 6px;
 }
