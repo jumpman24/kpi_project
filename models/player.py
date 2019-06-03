@@ -20,9 +20,10 @@ class Player(BaseModel):
         return f"{self.last_name} {self.first_name}"
 
     @classmethod
-    def info(cls):
+    def info(cls, player_id=None):
         query = (
             f"SELECT "
+            f"p.id, "
             f"CONCAT(p.last_name, ' ', p.first_name), "
             f"COALESCE(c.name, ''), "
             f"COALESCE(p.rating, ''), "
@@ -37,5 +38,7 @@ class Player(BaseModel):
             f"LEFT JOIN national_rank as nr "
             f"ON p.national_rank_id=nr.id "
         )
+        if player_id:
+            query += 'WHERE p.id =' + player_id
 
         return cls.execute_query(query)

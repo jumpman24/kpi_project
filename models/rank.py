@@ -11,3 +11,9 @@ class Rank(BaseModel):
 
     def __str__(self):
         return f"{self.name}"
+
+    @classmethod
+    def info(cls):
+        query = 'SELECT id, abbreviate FROM rank'
+
+        return cls.execute_query(query)

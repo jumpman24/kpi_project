@@ -16,27 +16,21 @@ class City(BaseModel):
     def __repr__(self):
         return f"City: {self.name}"
 
-    @classmethod
-    def select(cls, id=None, name=None, country_id=None):
-        query = (
-            "SELECT id, name, country_id FROM city "
-        )
-        where = []
-        if id:
-            where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
-        if country_id:
-            where.append(f"country_id = '{country_id}'")
-
-        if where:
-            query += 'WHERE ' + ' AND '.join(where)
-
-        results = []
-        for row in cls.execute_query(query):
-            results.append(City(*row))
-
-        return results
-
     def get_country(self):
         return Country.get_by_id(self.country_id)
+
+    @classmethod
+    def info(cls, city_id=None):
+        query = (
+            "SELECT c.id, CONCAT(c.name, ' (', c2.code, ')') "
+            "FROM city c "
+            "INNER JOIN country c2 "
+            "ON c.country_id=c2.id"
+        )
+
+        if city_id:
+            query += f' WHERE c.id = {city_id}'
+
+        query += ' ORDER BY c2.id, c.id'
+
+        return cls.execute_query(query)

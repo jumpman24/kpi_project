@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Player info</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}" />
+</head>
+<body>
+<div>
+    <a href="/">Index</a>
+    <a href="/players">Player list</a>
+    <a href="{{ player_id | safe }}/edit">Edit player</a>
+    <br>
+</div>
+<div class="table-container">
+    {{ player | safe }}
+</div>
+</body>
+</html>

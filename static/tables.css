@@ -8,6 +8,7 @@
 .ugd_responsive {
 	overflow-x: auto;
 }
+
 .ugd_table {
     border: 1px lightgrey solid;
     background-color: snow;
@@ -43,4 +44,8 @@
 .ugd_table thead th > a:visited {
     color: white;
     text-decoration: none;
+}
+
+.input {
+
 }

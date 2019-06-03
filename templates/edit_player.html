@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Редагувати гравця</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}" />
+</head>
+<body>
+<div>
+    <a href="/">Головна</a>
+    <a href="{{ url_for('players.players') }}">Список гравців</a>
+    <a href="{{ url_for('players.player_info', player_id=player_data.0) }}">Сторінка гравця</a>
+    <br>
+</div>
+<div align="left" class="table-container">
+    <form>
+        <label for="full_name">Повне ім'я:</label>
+        <input type="text" id="full_name" name="full_name" value="{{ player_data.1 }}">
+        <br/>
+        <label for="city">Місто:</label>
+        {{ cities | safe }}
+        <br/>
+        <label for="rating">Рейтинг:</label>
+        <input type="number" id="rating" name="rating" value="{{ player_data.3 }}" min="100" max="3000" step="1">
+        <br/>
+        <label for="rank">Ранг:</label>
+        {{ ranks | safe }}
+        <br/>
+        <label for="national_rank">Розряд:</label>
+        {{ national_ranks | safe }}
+
+    </form>
+</div>
+</body>
+</html>
