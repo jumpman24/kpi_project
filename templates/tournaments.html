@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Додати гравця</title>
+    <title>Турніри</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}"/>
 </head>
 <body>
 <div class="header">
-    <a href="" class="logo">Новий гравець</a>
+    <a href="/" class="logo">База турнірів по го</a>
+    <a href="/tournaments/add">Завантажити турнір</a>
     <div class="header-right">
         <a href="/players">Гравці</a>
-        <a href="/tournaments">Турніри</a>
+        <a class="active" href="/tournaments">Турніри</a>
     </div>
 </div>
-<div class="form-container">
-    {{ form | safe }}
+
+<div class="table-container">
+    {{ table | safe }}
 </div>
 </body>
 </html>

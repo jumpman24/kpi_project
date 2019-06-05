@@ -1,13 +1,13 @@
 from flask import Flask
 
-from views import index_bp, players_bp
+from views import index_bp, players_bp, tournaments_bp
 
 
 def create_app():
     app = Flask('kpi_project')
     app.register_blueprint(index_bp)
     app.register_blueprint(players_bp)
-
+    app.register_blueprint(tournaments_bp)
     return app
 
 

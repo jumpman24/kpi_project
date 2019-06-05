@@ -1,6 +1,4 @@
-from models import BaseModel, Country, City
-from database import mysql_execute
-
+from models import BaseModel
 
 class Player(BaseModel):
     table_name = 'player'
@@ -57,10 +55,19 @@ class Player(BaseModel):
 
     @classmethod
     def update(cls, player_id, last_name, first_name, city_id, rating, rank_id, national_rank_id):
+        last_name = last_name.replace("'", "\\'")
+        first_name = first_name.replace("'", "\\'")
+        rating = float(rating)
         query = (
-            f"UPDATE player "
-            f"SET last_name='{last_name}', first_name='{first_name}', rating={rating}, city_id={city_id}, "
-            f"rank_id={rank_id}, national_rank_id={national_rank_id} "
+            f"UPDATE player SET "
+            f"last_name='{last_name}', "
+            f"first_name='{first_name}', "
+            f"rating={rating}, "
+            f"city_id={city_id}, "
+            f"rank_id={rank_id}, "
+            f"national_rank_id={national_rank_id} "
             f"WHERE id={player_id}"
         )
         print(query)
+
+        return cls.execute_query(query)

@@ -29,3 +29,15 @@ class Tournament(BaseModel):
         )
 
         return mysql_execute(query)
+
+    @classmethod
+    def info(cls):
+        query = (
+            "SELECT t.id, t.name, c.name, t.date_start, t.date_end, t.PIN "
+            "FROM tournament as t "
+            "INNER JOIN city as c "
+            "ON t.city_id=c.id "
+            "ORDER BY t.date_start DESC"
+        )
+
+        return cls.execute_query(query)

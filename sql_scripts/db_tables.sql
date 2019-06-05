@@ -33,7 +33,7 @@ CREATE TABLE `player` (
     `PIN` CHAR(8),
     `last_name` VARCHAR(255) NOT NULL,
     `first_name` VARCHAR(255) NOT NULL,
-    `rating` INT UNSIGNED DEFAULT 100,
+    `rating` DECIMAL(7, 3) UNSIGNED DEFAULT 100,
     `city_id` INT UNSIGNED,
     `rank_id` INT UNSIGNED,
     `national_rank_id` INT UNSIGNED,

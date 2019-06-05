@@ -2,19 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Player</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Гравці</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}"/>
 </head>
 <body>
-<div>
-    <a href="/">Index</a>
-    <a href="/players/add">Add player</a>
-    <br>
+<div class="header">
+    <a href="/" class="logo">База турнірів по го</a>
+    <a href="/players/add">Додати гравця</a>
+    <div class="header-right">
+        <a class="active" href="/players">Гравці</a>
+        <a href="/tournaments">Турніри</a>
+    </div>
 </div>
+
 <div class="table-container">
-    {{ player_list | safe }}
+    {{ table | safe }}
 </div>
 </body>
 </html>

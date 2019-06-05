@@ -9,11 +9,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}" />
 </head>
 <body>
-<div>
-    <a href="/">Головна</a>
-    <a href="{{ url_for('players.players') }}">Список гравців</a>
-    <a href="{{ url_for('players.player_info', player_id=player_id) }}">Сторінка гравця</a>
-    <br>
+<div class="header">
+    <a href="{{ url_for('players.player_info', player_id=player_id) }}" class="logo">{{ player_data.1 }} {{ player_data.2 }} ({{ player_data.5 }})</a>
+    <div class="header-right">
+        <a href="/players">Гравці</a>
+        <a href="/tournaments">Турніри</a>
+    </div>
 </div>
 <div class="form-container">
     {{ form | safe }}

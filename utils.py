@@ -65,3 +65,7 @@ def render_row(label, input, div_attrs):
                       label,
                       input,
                       f"</div>"])
+
+
+def render_link(url, name):
+    return f'<b><a href="{url}">{name}</a></b>'
