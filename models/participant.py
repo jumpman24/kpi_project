@@ -1,4 +1,4 @@
-from models import BaseModel, Player, Tournament
+from models import BaseModel, PlayerModel, Tournament
 
 
 class Participant(BaseModel):
@@ -14,6 +14,6 @@ class Participant(BaseModel):
     )
 
     def __str__(self):
-        player = Player.get_by_id(self.player_id)
+        player = PlayerModel.get_by_id(self.player_id)
         tournament = Tournament.get_by_id(self.tournament_id)
         return f"{player} @ {tournament}"

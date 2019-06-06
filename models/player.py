@@ -1,6 +1,8 @@
 from models import BaseModel
 
-class Player(BaseModel):
+
+
+class PlayerModel(BaseModel):
     table_name = 'player'
     columns = (
         'id',

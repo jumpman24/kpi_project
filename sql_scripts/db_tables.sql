@@ -14,13 +14,6 @@ CREATE TABLE `city` (
     CONSTRAINT `FK_country_city` FOREIGN KEY (`country_id`) REFERENCES `country`(`id`)
 );
 
-CREATE TABLE `national_rank` (
-    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NOT NULL,
-    `abbreviate` VARCHAR(20) NOT NULL,
-    PRIMARY KEY (`id`)
-);
-
 CREATE TABLE `rank` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
@@ -28,12 +21,19 @@ CREATE TABLE `rank` (
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `national_rank` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `abbreviate` VARCHAR(20) NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
 CREATE TABLE `player` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `PIN` CHAR(8),
     `last_name` VARCHAR(255) NOT NULL,
     `first_name` VARCHAR(255) NOT NULL,
-    `rating` DECIMAL(7, 3) UNSIGNED DEFAULT 100,
+    `PIN` CHAR(8),
+    `rating` DECIMAL(7, 3) UNSIGNED,
     `city_id` INT UNSIGNED,
     `rank_id` INT UNSIGNED,
     `national_rank_id` INT UNSIGNED,
@@ -61,8 +61,8 @@ CREATE TABLE `participant` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `player_id` INT UNSIGNED NOT NULL,
     `tournament_id` INT UNSIGNED NOT NULL,
+    `place` INT UNSIGNED NOT NULL,
     `rank_id` INT UNSIGNED,
-    `place` INT UNSIGNED,
     `rating_start` DECIMAL(8, 4),
     `rating_end` DECIMAL(8, 4),
     PRIMARY KEY (`id`),
@@ -74,8 +74,8 @@ CREATE TABLE `participant` (
 CREATE TABLE `pairing` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `player_id` INT UNSIGNED NOT NULL,
-    `opponent_id` INT UNSIGNED,
     `round` INT UNSIGNED,
+    `opponent_id` INT UNSIGNED,
     `color` CHAR(1),
     `handicap` INT UNSIGNED DEFAULT 0,
     `round_skip` TINYINT(1),

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect
-from models import Player, City, Rank, NationalRank
+from models import PlayerModel, City, Rank, NationalRank
 from utils import render_table, render_select, render_input, render_label, render_row, render_link
 
 bp = Blueprint('players', __name__, url_prefix='/players')
@@ -7,7 +7,7 @@ bp = Blueprint('players', __name__, url_prefix='/players')
 
 @bp.route('/', methods=['GET'])
 def players():
-    player_list = Player.info()
+    player_list = PlayerModel.info()
     player_ids = []
     table_data = []
     for idx, row in enumerate(player_list, start=1):
@@ -21,7 +21,7 @@ def players():
 
 @bp.route('/<string:player_id>', methods=['GET'])
 def player_info(player_id):
-    player_data = Player.info(player_id)[0][1:]
+    player_data = PlayerModel.info(player_id)[0][1:]
     data = zip(['Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN'], player_data)
     column_names = ['Поле', 'Значення']
     table = render_table(column_names, data)
@@ -67,10 +67,10 @@ def add_player():
 def edit_player(player_id):
     if request.method == 'POST':
         request_form = request.form
-        Player.update(player_id, **request_form)
+        PlayerModel.update(player_id, **request_form)
         return redirect(f'/players/{player_id}')
 
-    player_data = Player.info(player_id, False, True)[0]
+    player_data = PlayerModel.info(player_id, False, True)[0]
     print(player_data)
     form = '\n'.join([
         '<div class="container">',
