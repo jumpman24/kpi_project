@@ -11,7 +11,7 @@ MYSQL_CONFIG = {
 }
 
 
-def mysql_execute(query):
+def execute_query(query):
     connection = mysql.connector.connect(**MYSQL_CONFIG)
     cursor = connection.cursor()
 

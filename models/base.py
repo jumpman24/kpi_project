@@ -1,4 +1,4 @@
-from database import mysql_execute
+from database import execute_query
 
 
 class BaseModel:
@@ -11,7 +11,7 @@ class BaseModel:
 
     @staticmethod
     def execute_query(query):
-        return mysql_execute(query)
+        return execute_query(query)
 
     @classmethod
     def get_columns(cls, *columns):

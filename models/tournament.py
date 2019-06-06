@@ -1,5 +1,5 @@
 from models import BaseModel
-from database import mysql_execute
+from database import execute_query
 
 
 class Tournament(BaseModel):
@@ -28,7 +28,7 @@ class Tournament(BaseModel):
             f"WHERE t.id IN ({id_string})"
         )
 
-        return mysql_execute(query)
+        return execute_query(query)
 
     @classmethod
     def info(cls):
