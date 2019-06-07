@@ -41,8 +41,21 @@ LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
     return players
 
 
-def update_player(player_id: int, last_name: str = None, first_name: str = None, pin: str = None, rating: float = None,
-                  is_active: bool = None):
+def insert_player(last_name, first_name, pin: str = None,
+                  rating: float = None, is_active: bool = None):
+    last_name = last_name.replace("'", "\\'")
+    first_name = first_name.replace("'", "\\'")
+    # TODO: finish
+    query = f"""
+INSERT INTO player
+    (last_name, first_name, PIN, rating, is_active, city_id, rank_id, national_rank_id)
+VALUES
+('{last_name}', {first_name}, {pin or 'NULL'}, {rating or 'NULL'}, {is_active or 'NULL'})
+"""
+
+
+def update_player(player_id: int, last_name: str = None, first_name: str = None, pin: str = None,
+                  rating: float = None, is_active: bool = None):
     player = select_player(player_id)[0]
     last_name = last_name.replace("'", "\\'") if last_name else player.last_name
     first_name = first_name.replace("'", "\\'") if first_name else player.first_name
@@ -58,6 +71,12 @@ rating = {rating},
 is_active = {is_active}
 WHERE id = {player_id}
 """
+    return execute_query(query)
+
+
+def delete_player(player_id: int):
+    query = f"DELETE player WHERE id = {player_id}"
+
     return execute_query(query)
 
 
