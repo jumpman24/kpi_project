@@ -1,19 +1,19 @@
-from .base import BaseModel
+from database import execute_query
+from models.models import Rank
+from typing import List
 
 
-class Rank(BaseModel):
-    table_name = 'rank'
-    columns = (
-        'id',
-        'name',
-        'abbreviate',
-    )
+def select_rank(rid: int = None) -> List[Rank]:
+    query = "SELECT id, name, abbreviate FROM rank"
 
-    def __str__(self):
-        return f"{self.name}"
+    if rid:
+        query += f" WHERE id = {rid}"
 
-    @classmethod
-    def info(cls):
-        query = 'SELECT id, name FROM rank'
+    result = execute_query(query)
 
-        return cls.execute_query(query)
+    ranks = []
+    for rank_id, name, abbreviate in result:
+        rank = Rank(rank_id, name, abbreviate)
+        ranks.append(rank)
+
+    return ranks

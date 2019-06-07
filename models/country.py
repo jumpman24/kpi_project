@@ -1,41 +1,19 @@
-from .base import BaseModel
-import mysql.connector
-from mysql.connector import errorcode
+from database import execute_query
+from models.models import Country
+from typing import List
 
 
-get_country_query = (
-    f"SELECT id, name, code "
-    f"FROM country "
-    f"WHERE id = '%s'"
-)
+def select_country(cid: int = None) -> List[Country]:
+    query = "SELECT id, name, code FROM country"
 
+    if cid:
+        query += f" WHERE id = {cid}"
 
-class Country(BaseModel):
-    table_name = 'country'
-    columns = (
-        'id',
-        'name',
-        'code',
-    )
+    result = execute_query(query)
 
-    def __str__(self):
-        return self.name
+    countries = []
+    for country_id, name, code in result:
+        rank = Country(country_id, name, code)
+        countries.append(rank)
 
-    def __repr__(self):
-        return f"Country: {self.name}"
-
-    @classmethod
-    def select(cls, id=None, name=None, code=None):
-        query = "SELECT id, name, code FROM country "
-        where = []
-        if id:
-            where.append(f"id = {id}")
-        if name:
-            where.append(f"name = '{name}'")
-        if code:
-            where.append(f"code = '{code}'")
-
-        if where:
-            query += 'WHERE ' + ' AND '.join(where)
-
-        return cls.execute_query(query)
+    return countries

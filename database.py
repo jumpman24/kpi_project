@@ -1,7 +1,6 @@
 import mysql.connector
 import os
 
-
 MYSQL_CONFIG = {
     'user': 'is8204',
     'password': os.environ.get('MYSQL_PASSWORD'),
@@ -28,3 +27,21 @@ def execute_query(query):
     connection.close()
 
     return results
+
+
+def prep_value(value=None, default='NULL'):
+    if value is None:
+        return default
+
+    if isinstance(value, str):
+        value = value.replace("'", "\\'")
+        return f"'{value}'"
+
+    if isinstance(value, bool):
+        return f"{int(value)}"
+
+    if isinstance(value, int):
+        return f"{value}"
+
+    if isinstance(value, float):
+        return f"{value:.3f}"

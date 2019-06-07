@@ -1,36 +1,62 @@
-from .base import BaseModel
+from database import execute_query, prep_value
 from .country import Country
+from typing import List
+from models.models import City
 
 
-class City(BaseModel):
-    table_name = 'city'
-    columns = (
-        'id',
-        'name',
-        'country_id',
-    )
+def select_city(cid: int = None) -> List[City]:
+    query = """
+SELECT 
+    c.id, c.name, 
+    c2.id, c2.name, c2.code
+FROM city c
+LEFT JOIN country c2 ON c.country_id=c2.id 
+"""
+    if cid:
+        query += f"WHERE c.id = {cid}"
 
-    def __str__(self):
-        return f"{self.name}"
+    result = execute_query(query)
 
-    def __repr__(self):
-        return f"City: {self.name}"
+    cities = []
+    for (
+            city_id, city_name,
+            country_id, country_name, country_code
+    ) in result:
+        country = Country(country_id, country_name, country_code)
+        city = City(city_id, city_name, country)
+        cities.append(city)
 
-    def get_country(self):
-        return Country.get_by_id(self.country_id)
+    return cities
 
-    @classmethod
-    def info(cls, city_id=None):
-        query = (
-            "SELECT c.id, CONCAT(c.name, ' (', c2.code, ')') "
-            "FROM city c "
-            "INNER JOIN country c2 "
-            "ON c.country_id=c2.id"
-        )
 
-        if city_id:
-            query += f' WHERE c.id = {city_id}'
+def insert_city(name: str, country_id: int = None):
+    name = prep_value(name)
+    country_id = prep_value(country_id)
+    query = f"""
+INSERT INTO city 
+    (name, country_id)
+VALUES 
+    ({name}, {country_id})
+"""
 
-        query += ' ORDER BY c2.id, c.id'
+    return execute_query(query)
 
-        return cls.execute_query(query)
+
+def update_city(city_id: int, name: str = None, country_id: int = None):
+    city = select_city(city_id)[0]
+    name = prep_value(name or city.name)
+    country_id = prep_value(country_id or city.country.id)
+    query = f"""
+UPDATE city SET
+name = {name}, 
+country_id = {country_id}
+WHERE id = {city_id}
+"""
+
+    return execute_query(query)
+
+
+def delete_city(city_id: int):
+    query = f"DELETE FROM city WHERE id = {city_id}"
+
+    return execute_query(query)

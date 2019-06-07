@@ -33,13 +33,16 @@ def render_table(column_names, rows, table_attrs=None, header_attrs=None, row_at
     return '\n'.join([f'<table{make_attrs(table_attrs)}>', '\n'.join(table_data), '</table>'])
 
 
-def render_input(type_, attrs: dict = None, div_attrs: dict = None):
+def render_input(type_, attrs: dict = None, div_attrs: dict = None, checked: bool = None):
+    div_attrs = div_attrs or {'class': 'col-75'}
+    checked = ' checked' if type_ == 'checkbox' and checked else ''
     return '\n'.join([f"<div{make_attrs(div_attrs)}>",
-                      f'<input type="{type_}" {make_attrs(attrs)}>',
+                      f'<input type="{type_}"{make_attrs(attrs)}{checked}>',
                       f"</div>"])
 
 
 def render_label(for_, value, div_attrs: dict = None):
+    div_attrs = div_attrs or {'class': 'col-25'}
     return '\n'.join([f"<div{make_attrs(div_attrs)}>",
                       f'<label for="{for_}">{value}</label>',
                       f"</div>"])
@@ -47,11 +50,12 @@ def render_label(for_, value, div_attrs: dict = None):
 
 def render_select(name, values, selected=None, div_attrs: dict = None):
     data = []
-    for idx, value in values:
-        if value == selected:
-            data.append(f'<option selected value="{idx}">{value}</option>')
+    div_attrs = div_attrs or {'class': 'col-75'}
+    for item_id, value in values:
+        if item_id == selected:
+            data.append(f'<option selected value="{item_id}">{value}</option>')
         else:
-            data.append(f'<option value="{idx}">{value}</option>')
+            data.append(f'<option value="{item_id}">{value}</option>')
 
     return '\n'.join([f"<div{make_attrs(div_attrs)}>",
                       f'<select name="{name}">',
@@ -60,7 +64,8 @@ def render_select(name, values, selected=None, div_attrs: dict = None):
                       f"</div>"])
 
 
-def render_row(label, input, div_attrs):
+def render_row(label, input, div_attrs: dict = None):
+    div_attrs = div_attrs or {'class': 'row'}
     return '\n'.join([f"<div{make_attrs(div_attrs)}>",
                       label,
                       input,
@@ -69,3 +74,39 @@ def render_row(label, input, div_attrs):
 
 def render_link(url, name):
     return f'<b><a href="{url}">{name}</a></b>'
+
+
+def render_text_input_row(item_id: str, display_name: str, value: str = None):
+    label = render_label(item_id, display_name)
+    input_attrs = {'name': item_id}
+
+    if value is not None:
+        input_attrs['value'] = value
+
+    input_field = render_input('text', input_attrs)
+
+    return render_row(label, input_field)
+
+
+def render_number_input_row(item_id: str, display_name: str, min_value: str = None, max_value: str = None,
+                            step: str = None, value: str = None):
+    label = render_label(item_id, display_name)
+    input_attrs = {'name': item_id, 'min': min_value, 'max': max_value, 'step': step}
+
+    if value is not None:
+        input_attrs['value'] = value
+
+    input_field = render_input('number', input_attrs)
+
+    return render_row(label, input_field)
+
+
+def render_select_row(item_id: str, display_name: str, values: list, selected: str = None):
+    label = render_label(item_id, display_name)
+    select = render_select(item_id, values, selected)
+
+    return render_row(label, select)
+
+
+def render_submit():
+    return render_row('', render_input('submit', {'value': 'Submit'}))

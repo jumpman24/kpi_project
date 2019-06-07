@@ -1,19 +1,19 @@
-from .base import BaseModel
+from database import execute_query
+from models.models import NationalRank
+from typing import List
 
 
-class NationalRank(BaseModel):
-    table_name = 'national_rank'
-    columns = (
-        'id',
-        'name',
-        'abbreviate',
-    )
+def select_national_rank(rid: int = None) -> List[NationalRank]:
+    query = "SELECT id, name, abbreviate FROM national_rank"
 
-    def __str__(self):
-        return f"{self.abbreviate}"
+    if rid:
+        query += f" WHERE id = {rid}"
 
-    @classmethod
-    def info(cls):
-        query = 'SELECT id, abbreviate FROM national_rank'
+    result = execute_query(query)
 
-        return cls.execute_query(query)
+    national_ranks = []
+    for national_rank_id, name, abbreviate in result:
+        national_rank = NationalRank(national_rank_id, name, abbreviate)
+        national_ranks.append(national_rank)
+
+    return national_ranks

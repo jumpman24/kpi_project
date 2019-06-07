@@ -1,9 +1,10 @@
-from database import execute_query
-from models import BaseModel
+from database import execute_query, prep_value
 from models.models import Country, City, Rank, NationalRank, Player
+from typing import List
+from decimal import Decimal
 
 
-def select_player(pid: int = None):
+def select_player(pid: int = None) -> List[Player]:
     query = """
 SELECT 
     p.id, p.last_name, p.first_name, p.PIN, p.rating, p.is_active, 
@@ -23,13 +24,13 @@ LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
     result = execute_query(query)
 
     players = []
-    for row in result:
-        player_id, last_name, first_name, PIN, rating, is_active = row[:6]
-        city_id, city_name = row[6:8]
-        country_id, country_name, country_code = row[8:11]
-        rank_id, rank_name, rank_abbreviate = row[11:14]
-        national_rank_id, national_rank_name, national_rank_abbreviate = row[14:]
-
+    for (
+            player_id, last_name, first_name, PIN, rating, is_active,
+            city_id, city_name, country_id,
+            country_name, country_code,
+            rank_id, rank_name, rank_abbreviate,
+            national_rank_id, national_rank_name, national_rank_abbreviate
+    ) in result:
         country = Country(country_id, country_name, country_code)
         city = City(city_id, city_name, country)
         rank = Rank(rank_id, rank_name, rank_abbreviate)
@@ -41,113 +42,55 @@ LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
     return players
 
 
-def insert_player(last_name, first_name, pin: str = None,
-                  rating: float = None, is_active: bool = None):
-    last_name = last_name.replace("'", "\\'")
-    first_name = first_name.replace("'", "\\'")
-    # TODO: finish
+def insert_player(last_name, first_name, pin: str = None, rating: float = None, is_active: str = None,
+                  city_id: int = None, rank_id: int = None, national_rank_id: int = None):
+    last_name = prep_value(last_name)
+    first_name = prep_value(first_name)
+    pin = prep_value(pin)
+    rating = prep_value(Decimal(rating))
+    is_active = prep_value(is_active == 'on')
+    city_id = prep_value(int(city_id))
+    rank_id = prep_value(int(rank_id))
+    national_rank_id = prep_value(int(national_rank_id))
     query = f"""
 INSERT INTO player
     (last_name, first_name, PIN, rating, is_active, city_id, rank_id, national_rank_id)
 VALUES
-('{last_name}', {first_name}, {pin or 'NULL'}, {rating or 'NULL'}, {is_active or 'NULL'})
+    ({last_name}, {first_name}, {pin}, {rating}, {is_active}, {city_id}, {rank_id}, {national_rank_id})
 """
 
+    return execute_query(query)
 
-def update_player(player_id: int, last_name: str = None, first_name: str = None, pin: str = None,
-                  rating: float = None, is_active: bool = None):
+
+def update_player(player_id: int, last_name: str = None, first_name: str = None, pin: str = None, rating: float = None,
+                  is_active: str = None, city_id: int = None, rank_id: int = None, national_rank_id: int = None):
     player = select_player(player_id)[0]
-    last_name = last_name.replace("'", "\\'") if last_name else player.last_name
-    first_name = first_name.replace("'", "\\'") if first_name else player.first_name
-    pin = pin or player.pin
-    rating = rating or player.rating
-    is_active = int(is_active or player.is_active)
+
+    last_name = prep_value(last_name, player.last_name)
+    first_name = prep_value(first_name, player.first_name)
+    pin = prep_value(pin, player.pin)
+    rating = prep_value(float(rating) if rating is not None else player.rating)
+    is_active = prep_value(is_active == 'on' if is_active is not None else player.is_active)
+    city_id = prep_value(int(city_id))
+    rank_id = prep_value(int(rank_id))
+    national_rank_id = prep_value(int(national_rank_id))
     query = f"""
 UPDATE player SET
-last_name = '{last_name}',
-first_name = '{first_name},'
-pin = '{pin}',
+last_name = {last_name},
+first_name = {first_name},
+pin = {pin},
 rating = {rating},
-is_active = {is_active}
+is_active = {is_active},
+city_id = {city_id},
+rank_id = {rank_id},
+national_rank_id = {national_rank_id}
 WHERE id = {player_id}
 """
+
     return execute_query(query)
 
 
 def delete_player(player_id: int):
-    query = f"DELETE player WHERE id = {player_id}"
+    query = f"DELETE FROM player WHERE id = {player_id}"
 
     return execute_query(query)
-
-
-class PlayerModel(BaseModel):
-    table_name = 'player'
-    columns = (
-        'id',
-        'PIN',
-        'last_name',
-        'first_name',
-        'rating',
-        'city_id',
-        'rank_id',
-        'national_rank_id',
-        'is_active',
-    )
-
-    def __str__(self):
-        return f"{self.last_name} {self.first_name}"
-
-    @classmethod
-    def info(cls, player_id=None, concat_name=True, concat_city=False):
-        if concat_name:
-            name_columns = "CONCAT(p.last_name, ' ', p.first_name), "
-        else:
-            name_columns = "p.last_name, p.first_name, "
-
-        if concat_city:
-            city_column = "CONCAT(c.name, ' (', c2.code, ')'), "
-        else:
-            city_column = "c.name, "
-
-        query = (
-            f"SELECT "
-            f"p.id, "
-            f"{name_columns}"
-            f"{city_column}"
-            f"COALESCE(p.rating, ''), "
-            f"COALESCE(r.name, ''), "
-            f"COALESCE(nr.abbreviate, ''), "
-            f"COALESCE(p.PIN, '') "
-            f"FROM player as p "
-            f"LEFT JOIN city as c "
-            f"ON p.city_id=c.id "
-            f"LEFT JOIN country as c2 "
-            f"ON c.country_id=c2.id "
-            f"LEFT JOIN `rank` as r "
-            f"ON p.rank_id=r.id "
-            f"LEFT JOIN national_rank as nr "
-            f"ON p.national_rank_id=nr.id "
-        )
-        if player_id:
-            query += 'WHERE p.id =' + player_id
-
-        return cls.execute_query(query)
-
-    @classmethod
-    def update(cls, player_id, last_name, first_name, city_id, rating, rank_id, national_rank_id):
-        last_name = last_name.replace("'", "\\'")
-        first_name = first_name.replace("'", "\\'")
-        rating = float(rating)
-        query = (
-            f"UPDATE player SET "
-            f"last_name='{last_name}', "
-            f"first_name='{first_name}', "
-            f"rating={rating}, "
-            f"city_id={city_id}, "
-            f"rank_id={rank_id}, "
-            f"national_rank_id={national_rank_id} "
-            f"WHERE id={player_id}"
-        )
-        print(query)
-
-        return cls.execute_query(query)

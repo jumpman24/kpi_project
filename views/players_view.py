@@ -1,11 +1,26 @@
 from flask import Blueprint, render_template, request, redirect
 
-from models import PlayerModel, City, Rank, NationalRank
-from models.player import select_player
-from utils import render_table, render_select, render_input, render_label, render_row, render_link
+from models import (
+    select_city,
+    select_rank,
+    select_national_rank,
+    select_player,
+    insert_player,
+    update_player,
+)
+from utils import (
+    render_table,
+    render_link,
+    render_text_input_row,
+    render_number_input_row,
+    render_select_row,
+    render_submit
+)
 
 bp = Blueprint('players', __name__, url_prefix='/players')
-PLAYER_ATTRS = ('full_name', 'city.name', 'rating', 'rank.name', 'national_rank.abbreviate', 'pin')
+PLAYER_INFO_ATTRS = ('full_name', 'city.name', 'rating', 'rank.name', 'national_rank.abbreviate', 'pin', 'is_active')
+PLAYER_EDIT_ATTRS = ('last_name', 'first_name', 'rating', 'pin', 'is_active')
+PLAYER_FOREIGN_KEYS = ('city.id', 'rank.id', 'national_rank.id')
 
 
 @bp.route('/', methods=['GET'])
@@ -13,7 +28,7 @@ def players():
     all_players = select_player()
     table_data = []
     for idx, player in enumerate(all_players, start=1):
-        tr_data = [idx] + player.get_attrs(*PLAYER_ATTRS)
+        tr_data = [idx] + player.get_attrs(*PLAYER_INFO_ATTRS)
         tr_data[1] = render_link(f"/players/{player.id}", player.full_name)
         table_data.append(tr_data)
 
@@ -24,7 +39,7 @@ def players():
 
 @bp.route('/<string:player_id>', methods=['GET'])
 def player_info(player_id):
-    player_data = select_player(player_id)[0].get_attrs(*PLAYER_ATTRS)
+    player_data = select_player(player_id)[0].get_attrs(*PLAYER_INFO_ATTRS)
     data = zip(['Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN'], player_data)
     column_names = ['Поле', 'Значення']
     table = render_table(column_names, data)
@@ -34,33 +49,23 @@ def player_info(player_id):
 @bp.route('/add', methods=['GET', 'POST'])
 def add_player():
     if request.method == 'POST':
+        insert_player(**request.form)
         return redirect('/players')
 
+    cities = [c.get_attrs('id', 'name') for c in select_city()]
+    ranks = [r.get_attrs('id', 'name') for r in select_rank()]
+    national_ranks = [nr.get_attrs('id', 'name') for nr in select_national_rank()]
     form = '\n'.join([
         '<div class="container">',
         f'<form action="/players/add" method="post">',
-        render_row(render_label('last_name', 'Прізвище', {'class': 'col-25'}),
-                   render_input('text', {'name': 'last_name'}, {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('first_name', "Ім'я", {'class': 'col-25'}),
-                   render_input('text', {'name': 'first_name'}, {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('city_id', "Місто", {'class': 'col-25'}),
-                   render_select('city_id', City.info(), div_attrs={'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('rating', "Рейтинг", {'class': 'col-25'}),
-                   render_input('number',
-                                {'name': 'rating', 'min': '100', 'max': '3000', 'step': '0.001'},
-                                {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('rank_id', "Ранг", {'class': 'col-25'}),
-                   render_select('rank_id', Rank.info(), div_attrs={'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('national_rank_id', "Розряд", {'class': 'col-25'}),
-                   render_select('national_rank_id', NationalRank.info(),
-                                 div_attrs={'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row('', render_input('submit', {'value': 'Submit'}), {'class': 'row'}),
+        render_text_input_row("last_name", "Прізвище"),
+        render_text_input_row("first_name", "Ім'я"),
+        render_select_row('city_id', "Місто", cities),
+        render_number_input_row('rating', "Рейтинг", '100', '3000', '0.001'),
+        render_select_row('rank_id', "Ранг", ranks),
+        render_select_row('national_rank_id', "Розряд", national_ranks),
+        render_text_input_row("pin", "EGF PIN"),
+        render_submit(),
         '</form>',
         '</div>',
     ])
@@ -71,45 +76,33 @@ def add_player():
 @bp.route('/<string:player_id>/edit', methods=['GET', 'POST'])
 def edit_player(player_id):
     if request.method == 'POST':
-        request_form = request.form
-        PlayerModel.update(player_id, **request_form)
+        update_data = dict(request.form)
+        update_data['player_id'] = player_id
+        print(update_data)
+        update_player(**update_data)
         return redirect(f'/players/{player_id}')
 
-    player_data = PlayerModel.info(player_id, False, True)[0]
-    print(player_data)
+    player = select_player(player_id)[0]
+    player_data = player.get_attrs(*PLAYER_EDIT_ATTRS)
+    foreign_keys = player.get_attrs(*PLAYER_FOREIGN_KEYS)
+
+    cities = [c.get_attrs('id', 'name') for c in select_city()]
+    ranks = [r.get_attrs('id', 'name') for r in select_rank()]
+    national_ranks = [nr.get_attrs('id', 'name') for nr in select_national_rank()]
+
     form = '\n'.join([
         '<div class="container">',
         f'<form action="/players/{player_id}/edit" method="post">',
-        render_row(render_label('last_name', 'Прізвище', {'class': 'col-25'}),
-                   render_input('text', {'name': 'last_name', 'value': player_data[1]},
-                                {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('first_name', "Ім'я", {'class': 'col-25'}),
-                   render_input('text', {'name': 'first_name', 'value': player_data[2]},
-                                {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('city_id', "Місто", {'class': 'col-25'}),
-                   render_select('city_id', City.info(), player_data[3], {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('rating', "Рейтинг", {'class': 'col-25'}),
-                   render_input('number', {'name': 'rating',
-                                           'value': player_data[4],
-                                           'min': '100',
-                                           'max': '3000',
-                                           'step': '0.001'},
-                                {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('rank_id', "Ранг", {'class': 'col-25'}),
-                   render_select('rank_id', Rank.info(), player_data[5], {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row(render_label('national_rank_id', "Розряд", {'class': 'col-25'}),
-                   render_select('national_rank_id', NationalRank.info(), player_data[6],
-                                 {'class': 'col-75'}),
-                   {'class': 'row'}),
-        render_row('', render_input('submit', {'value': 'Submit'}), {'class': 'row'}),
+        render_text_input_row("last_name", "Прізвище", player_data[0]),
+        render_text_input_row("first_name", "Ім'я", player_data[1]),
+        render_select_row('city_id', "Місто", cities, foreign_keys[0]),
+        render_number_input_row('rating', "Рейтинг", '100', '3000', '0.001', player_data[2]),
+        render_select_row('rank_id', "Ранг", ranks, foreign_keys[1]),
+        render_select_row('national_rank_id', "Розряд", national_ranks, foreign_keys[2]),
+        render_text_input_row("pin", "EGF PIN", player_data[3]),
+        render_submit(),
         '</form>',
         '</div>',
     ])
 
-    return render_template('edit_player.html', player_data=player_data, form=form,
-                           player_id=player_id)
+    return render_template('edit_player.html', player_data=player_data, form=form, player_id=player_id)
