@@ -18,11 +18,15 @@
 </div>
 <div class="form-container">
     {{ form | safe }}
-    {% if error %}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
     <div class="isa_error">
-        <p>Помилка: {{ error }}</p>
+        {% for message in messages %}
+        <p>Помилка: {{ message }}</p>
+        {% endfor %}
     </div>
     {% endif %}
+    {% endwith %}
 </div>
 </body>
 </html>

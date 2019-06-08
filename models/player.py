@@ -3,7 +3,7 @@ from models.models import Country, City, Rank, NationalRank, Player
 from typing import List
 
 
-def select_player(pid: int = None, order_by='rating', desc=True) -> List[Player]:
+def select_player_query(pid: int = None, order_by='rating', desc=True) -> List[Player]:
     query = """
 SELECT 
     p.id, p.last_name, p.first_name, p.PIN, p.rating, p.is_active, 
@@ -43,8 +43,8 @@ LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
     return players
 
 
-def insert_player(last_name, first_name, pin: str = None, rating: float = None, is_active: str = None,
-                  city_id: int = None, rank_id: int = None, national_rank_id: int = None):
+def insert_player_query(last_name, first_name, pin: str = None, rating: float = None, is_active: str = None,
+                        city_id: int = None, rank_id: int = None, national_rank_id: int = None):
     last_name = prep_string(last_name)
     first_name = prep_string(first_name)
     pin = prep_string(pin)
@@ -63,9 +63,9 @@ VALUES
     return execute_query(query)
 
 
-def update_player(player_id: int, last_name: str = None, first_name: str = None, pin: str = None, rating: float = None,
-                  is_active: str = None, city_id: int = None, rank_id: int = None, national_rank_id: int = None):
-    player = select_player(player_id)[0]
+def update_player_query(player_id: int, last_name: str = None, first_name: str = None, pin: str = None, rating: float = None,
+                        is_active: str = None, city_id: int = None, rank_id: int = None, national_rank_id: int = None):
+    player = select_player_query(player_id)[0]
 
     last_name = prep_string(last_name, player.last_name)
     first_name = prep_string(first_name, player.first_name)
@@ -91,7 +91,7 @@ WHERE id = {player_id}
     return execute_query(query)
 
 
-def delete_player(player_id: int):
+def delete_player_query(player_id: int):
     query = f"DELETE FROM player WHERE id = {player_id}"
 
     return execute_query(query)

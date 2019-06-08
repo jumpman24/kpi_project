@@ -16,8 +16,14 @@
         <a href="/tournaments">Турніри</a>
     </div>
 </div>
-
 <div class="table-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
     {{ table | safe }}
 </div>
 </body>

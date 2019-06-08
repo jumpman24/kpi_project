@@ -59,7 +59,7 @@ def render_select(name, values, selected=None, div_attrs: dict = None):
 
     return '\n'.join([f"<div{make_attrs(div_attrs)}>",
                       f'<select name="{name}">',
-                      f"<option{' selected' if selected else ''} value> -- select an option -- </option>\n",
+                      f"<option{' selected' if selected else ''} value> -- Не обрано -- </option>\n",
                       '\n'.join(data),
                       '</select>',
                       f"</div>"])

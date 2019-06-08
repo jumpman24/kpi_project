@@ -1,6 +1,6 @@
 .isa_info, .isa_success, .isa_warning, .isa_error {
-    max-width: 50%;
-    text-align: left;
+    width: 100%;
+    text-align: center;
     margin: 10px 0px;
     padding:12px;
 }
