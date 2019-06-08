@@ -17,7 +17,7 @@ def make_table_header(values, header_attrs):
 
 def make_table_row(values, row_attrs):
     attrs = make_attrs(row_attrs)
-    body = [f"<td{attrs}>{value}</td>" for value in values]
+    body = [f"<td{attrs}>{value if value is not None else ''}</td>" for value in values]
     body_string = '\n'.join(body)
     return '\n'.join(['<tr>', body_string, '</tr>'])
 
@@ -59,6 +59,7 @@ def render_select(name, values, selected=None, div_attrs: dict = None):
 
     return '\n'.join([f"<div{make_attrs(div_attrs)}>",
                       f'<select name="{name}">',
+                      f"<option{' selected' if selected else ''} value> -- select an option -- </option>\n",
                       '\n'.join(data),
                       '</select>',
                       f"</div>"])
@@ -99,6 +100,14 @@ def render_number_input_row(item_id: str, display_name: str, min_value: str = No
     input_field = render_input('number', input_attrs)
 
     return render_row(label, input_field)
+
+
+def render_checkbox_row(item_id: str, display_name: str, value: str = None):
+    label = render_label(item_id, display_name)
+    input_attrs = {'name': item_id, 'value': item_id}
+    checkbox = render_input('checkbox', input_attrs, checked=value)
+
+    return render_row(label, checkbox)
 
 
 def render_select_row(item_id: str, display_name: str, values: list, selected: str = None):

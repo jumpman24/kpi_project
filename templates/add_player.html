@@ -18,6 +18,11 @@
 </div>
 <div class="form-container">
     {{ form | safe }}
+    {% if error %}
+    <div class="isa_error">
+        <p>Помилка: {{ error }}</p>
+    </div>
+    {% endif %}
 </div>
 </body>
 </html>

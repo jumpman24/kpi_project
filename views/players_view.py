@@ -1,3 +1,4 @@
+import mysql.connector
 from flask import Blueprint, render_template, request, redirect
 
 from models import (
@@ -13,6 +14,7 @@ from utils import (
     render_link,
     render_text_input_row,
     render_number_input_row,
+    render_checkbox_row,
     render_select_row,
     render_submit
 )
@@ -32,7 +34,7 @@ def players():
         tr_data[1] = render_link(f"/players/{player.id}", player.full_name)
         table_data.append(tr_data)
 
-    column_names = ['№ з/п', 'Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN']
+    column_names = ['№ з/п', 'Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN', 'Активний']
     table = render_table(column_names, table_data)
     return render_template('players.html', table=table)
 
@@ -40,7 +42,7 @@ def players():
 @bp.route('/<string:player_id>', methods=['GET'])
 def player_info(player_id):
     player_data = select_player(player_id)[0].get_attrs(*PLAYER_INFO_ATTRS)
-    data = zip(['Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN'], player_data)
+    data = zip(['Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN', 'Активний'], player_data)
     column_names = ['Поле', 'Значення']
     table = render_table(column_names, data)
     return render_template('player.html', player_data=player_data, table=table, player_id=player_id)
@@ -48,9 +50,14 @@ def player_info(player_id):
 
 @bp.route('/add', methods=['GET', 'POST'])
 def add_player():
+    error = None
     if request.method == 'POST':
-        insert_player(**request.form)
-        return redirect('/players')
+        print(dict(request.form))
+        try:
+            insert_player(**request.form)
+            return redirect('/players')
+        except mysql.connector.Error as err:
+            error = err.msg
 
     cities = [c.get_attrs('id', 'name') for c in select_city()]
     ranks = [r.get_attrs('id', 'name') for r in select_rank()]
@@ -65,21 +72,20 @@ def add_player():
         render_select_row('rank_id', "Ранг", ranks),
         render_select_row('national_rank_id', "Розряд", national_ranks),
         render_text_input_row("pin", "EGF PIN"),
+        render_checkbox_row('is_active', "Активний"),
         render_submit(),
         '</form>',
         '</div>',
     ])
 
-    return render_template('add_player.html', form=form)
+    return render_template('add_player.html', form=form, error=error)
 
 
 @bp.route('/<string:player_id>/edit', methods=['GET', 'POST'])
 def edit_player(player_id):
     if request.method == 'POST':
-        update_data = dict(request.form)
-        update_data['player_id'] = player_id
-        print(update_data)
-        update_player(**update_data)
+        print(dict(request.form))
+        update_player(player_id, **request.form)
         return redirect(f'/players/{player_id}')
 
     player = select_player(player_id)[0]
@@ -100,6 +106,7 @@ def edit_player(player_id):
         render_select_row('rank_id', "Ранг", ranks, foreign_keys[1]),
         render_select_row('national_rank_id', "Розряд", national_ranks, foreign_keys[2]),
         render_text_input_row("pin", "EGF PIN", player_data[3]),
+        render_checkbox_row('is_active', "Активний", player_data[4]),
         render_submit(),
         '</form>',
         '</div>',

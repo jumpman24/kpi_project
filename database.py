@@ -14,7 +14,7 @@ def execute_query(query):
     connection = mysql.connector.connect(**MYSQL_CONFIG)
     cursor = connection.cursor()
 
-    print(query)
+    # print(query)
     cursor.execute(query)
 
     results = []
@@ -45,3 +45,34 @@ def prep_value(value=None, default='NULL'):
 
     if isinstance(value, float):
         return f"{value:.3f}"
+
+
+def prep_string(value, default='NULL'):
+    if value is None:
+        return default
+    value = value.replace("'", "\\'")
+    return f"'{value}'"
+
+
+def prep_float(value, default='NULL'):
+    if value is None or value == '':
+        return default
+
+    value = float(value)
+    return f"{value:.3f}"
+
+
+def prep_int(value, default='NULL'):
+    if value is None or value == '':
+        return default
+
+    value = int(value)
+    return f"{value}"
+
+
+def prep_bool(value, default='NULL'):
+    if value is None:
+        return default
+
+    value = int(bool(value))
+    return f"{value}"
