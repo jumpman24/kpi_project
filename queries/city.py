@@ -1,7 +1,7 @@
 from typing import List
 
 from database import execute_query, prep_string, prep_int
-from models.models import City
+from models import City
 from .country import Country
 
 

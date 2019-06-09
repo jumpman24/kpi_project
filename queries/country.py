@@ -1,5 +1,5 @@
 from database import execute_query
-from models.models import Country
+from models import Country
 from typing import List
 
 

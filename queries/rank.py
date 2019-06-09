@@ -1,5 +1,5 @@
 from database import execute_query
-from models.models import Rank
+from models import Rank
 from typing import List
 
 

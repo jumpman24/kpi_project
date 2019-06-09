@@ -13,7 +13,7 @@
     <a href="{{ url_for('players.edit_player', player_id=player.id) }}">Редагувати</a>
     <a href="{{ url_for('players.delete_player', player_id=player.id) }}" onclick="return confirm('Ви впевнені?');">Видалити</a>
     <div class="header-right">
-        <a href="{{ url_for('players.players') }}">Гравці</a>
+        <a href="{{ url_for('players.players') }}" class="active">Гравці</a>
         <a href="{{ url_for('tournaments.tournaments') }}">Турніри</a>
     </div>
 </div>

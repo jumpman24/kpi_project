@@ -1,7 +1,7 @@
 from typing import List
 
 from database import execute_query, prep_string, prep_float, prep_int, prep_bool
-from models.models import Country, City, Rank, NationalRank, Player
+from models import Country, City, Rank, NationalRank, Player
 
 
 def select_player_query(pid=None, order_by_rating=True) -> List[Player]:
@@ -65,10 +65,10 @@ VALUES
     return execute_query(query)
 
 
-def update_player_query(player_id, last_name=None, first_name=None, pin=None, rating=None, is_active=None, city_id=None,
-                        rank_id=None, national_rank_id=None):
+def update_player_query(player_id, last_name, first_name, pin, rating, is_active, city_id,
+                        rank_id, national_rank_id):
     last_name = prep_string(last_name)
-    first_name = prep_string(first_name, )
+    first_name = prep_string(first_name)
     pin = prep_string(pin)
     rating = prep_float(rating)
     is_active = prep_bool(is_active)
@@ -91,7 +91,7 @@ WHERE id = {player_id}
     return execute_query(query)
 
 
-def delete_player_query(player_id: int):
+def delete_player_query(player_id):
     query = f"DELETE FROM player WHERE id = {player_id}"
 
     return execute_query(query)

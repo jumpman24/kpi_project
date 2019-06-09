@@ -9,7 +9,7 @@
 </head>
 <body>
 <div class="header">
-    <a href="/" class="logo">База турнірів по го</a>
+    <a href="{{ url_for('index.index') }}" class="logo">База турнірів по го</a>
     <a href="{{ url_for('tournaments.add_tournament') }}">Завантажити</a>
     <div class="header-right">
         <a href="{{ url_for('players.players') }}">Гравці</a>
@@ -18,6 +18,13 @@
 </div>
 
 <div class="table-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <p class="{{ category }}">{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
     {{ table | safe }}
 </div>
 </body>

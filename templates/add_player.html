@@ -10,10 +10,10 @@
 </head>
 <body>
 <div class="header">
-    <a href="" class="logo">Новий гравець</a>
+    <a href="{{ url_for('players.add_player') }}" class="logo">Новий гравець</a>
     <div class="header-right">
-        <a href="/players">Гравці</a>
-        <a href="/tournaments">Турніри</a>
+        <a href="{{ url_for('players.players') }}" class="active">Гравці</a>
+        <a href="{{ url_for('tournaments.tournaments') }}">Турніри</a>
     </div>
 </div>
 <div class="form-container">

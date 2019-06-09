@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import date
 from functools import total_ordering, reduce
 
@@ -16,6 +17,9 @@ class BaseModel:
     def __bool__(self):
         return getattr(self, 'id') is not None
 
+    def __hash__(self):
+        return self.id
+
     def __getattr__(self, item):
         return reduce(lambda obj, attr: obj.__getattribute__(attr), item.split('.'), self)
 
@@ -29,12 +33,18 @@ class Country(BaseModel):
         self.name = name
         self.code = code
 
+    def __str__(self):
+        return self.name or ''
+
 
 class City(BaseModel):
     def __init__(self, city_id, name, country: Country):
         self.id = city_id
         self.name = name
         self.country = country
+
+    def __str__(self):
+        return self.name or ''
 
 
 class Rank(BaseModel):
@@ -43,12 +53,18 @@ class Rank(BaseModel):
         self.name = name
         self.abbreviate = abbreviate
 
+    def __str__(self):
+        return self.name or ''
+
 
 class NationalRank(BaseModel):
     def __init__(self, national_rank_id, name, abbreviate):
         self.id = national_rank_id
         self.name = name
         self.abbreviate = abbreviate
+
+    def __str__(self):
+        return self.name or ''
 
 
 class Player(BaseModel):
@@ -87,7 +103,10 @@ class Tournament(BaseModel):
         self.date_start = date_start
         self.date_end = date_end
         self.is_ranked = is_ranked
-        self.city = city or None
+        self.city = city
+
+    def __str__(self):
+        return self.name
 
 
 class Participant(BaseModel):
@@ -98,9 +117,17 @@ class Participant(BaseModel):
         self.player = player
         self.tournament = tournament
         self.place = place
-        self.rank = rank or None
+        self.rank = rank
         self.rating_start = rating_start
         self.rating_end = rating_end
+
+    def __str__(self):
+        if self:
+            return f"{self.place} {self.player}"
+        return "-- no player --"
+
+    def __bool__(self):
+        return bool(self.player)
 
 
 class Pairing(BaseModel):
@@ -118,9 +145,47 @@ class Pairing(BaseModel):
         self.round_skip = round_skip
         self._is_technical = is_technical
 
+    def __str__(self):
+        return f"{self.player} {self.get_result()}"
+
+    def get_result(self, color_and_handicap=False):
+        if self.round_skip or not self.opponent:
+            return '0='
+
+        s = str(self.opponent.place)
+
+        s += '+' if self.result == 1 else '-'
+        s += '!' if self._is_technical else ''
+
+        if color_and_handicap:
+            s += '/'
+            s += self.color if self.color else 'h'
+            s += str(self.handicap)
+
+        return s
+
 
 class TournamentTable(BaseModel):
-    def __init__(self, tournament, participants, pairings):
+    def __init__(self, tournament, pairings):
         self.tournament = tournament
-        self.participants = participants
         self.pairings = pairings
+
+    def get_table(self):
+        result_dict = defaultdict(list)
+
+        for pairing in self.pairings:
+            result_dict[pairing.player].append(pairing.get_result())
+
+        table_data = []
+        for participant, results in result_dict.items():
+            place, full_name, city, rank, rating = participant.get_attrs(
+                'place',
+                'player.full_name',
+                'player.city.name',
+                'rank.name',
+                'rating_start'
+            )
+            table_data.append([place, full_name, city, rank, rating] + results)
+
+        return table_data, len(table_data[0])
+

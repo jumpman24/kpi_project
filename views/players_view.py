@@ -1,7 +1,7 @@
 import mysql.connector
 from flask import Blueprint, render_template, request, redirect, flash
 
-from models import (
+from queries import (
     select_city,
     select_rank,
     select_national_rank,
@@ -54,9 +54,11 @@ def player_info(player_id):
 def add_player():
     error = None
     if request.method == 'POST':
-        print(dict(request.form))
+        insert_data = dict(request.form)
+        insert_data['is_active'] = 'is_active' in insert_data.keys()
         try:
-            insert_player_query(is_active=request.form.getlist('is_active'), **request.form)
+            insert_player_query(**insert_data)
+            flash('Гравець створений', 'isa_success')
             return redirect('/players')
         except mysql.connector.Error as err:
             flash(err.msg)
@@ -86,7 +88,15 @@ def add_player():
 @bp.route('/<string:player_id>/edit', methods=['GET', 'POST'])
 def edit_player(player_id):
     if request.method == 'POST':
-        update_player_query(player_id, **request.form)
+        update_data = dict(request.form)
+        update_data['is_active'] = 'is_active' in update_data.keys()
+        try:
+            update_player_query(player_id, **update_data)
+            flash('Дані гравця оновлені', 'isa_success')
+            return redirect('/players')
+        except mysql.connector.Error as err:
+            flash(err.msg, 'isa_error')
+
         return redirect(f'/players/{player_id}')
 
     player = select_player_query(player_id)[0]
@@ -118,7 +128,7 @@ def edit_player(player_id):
 def delete_player(player_id):
     try:
         delete_player_query(player_id)
-        flash('Гравця видалено', 'isa_success')
+        flash('Гравець видалений', 'isa_success')
         return redirect('/players')
     except mysql.connector.Error as err:
         flash(err.msg, 'isa_error')

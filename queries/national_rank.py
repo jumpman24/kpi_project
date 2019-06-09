@@ -1,5 +1,5 @@
 from database import execute_query
-from models.models import NationalRank
+from models import NationalRank
 from typing import List
 
 

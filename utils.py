@@ -33,11 +33,12 @@ def render_table(column_names, rows, table_attrs=None, header_attrs=None, row_at
     return '\n'.join([f'<table{make_attrs(table_attrs)}>', '\n'.join(table_data), '</table>'])
 
 
-def render_input(type_, attrs: dict = None, div_attrs: dict = None, checked: bool = None):
+def render_input(type_, attrs: dict = None, div_attrs: dict = None, checked: bool = None, required=False):
     div_attrs = div_attrs or {'class': 'col-75'}
     checked = ' checked' if type_ == 'checkbox' and checked else ''
+    required = ' reqiured' if required else ''
     return '\n'.join([f"<div{make_attrs(div_attrs)}>",
-                      f'<input type="{type_}"{make_attrs(attrs)}{checked}>',
+                      f'<input type="{type_}"{make_attrs(attrs)}{checked}{required}>',
                       f"</div>"])
 
 
@@ -77,20 +78,20 @@ def render_link(url, name):
     return f'<b><a href="{url}">{name}</a></b>'
 
 
-def render_text_input_row(item_id: str, display_name: str, value: str = None):
+def render_text_input_row(item_id: str, display_name: str, value: str = None, required=False):
     label = render_label(item_id, display_name)
     input_attrs = {'name': item_id}
 
     if value is not None:
         input_attrs['value'] = value
 
-    input_field = render_input('text', input_attrs)
+    input_field = render_input('text', input_attrs, required=required)
 
     return render_row(label, input_field)
 
 
 def render_number_input_row(item_id: str, display_name: str, min_value: str = None, max_value: str = None,
-                            step: str = None, value: str = None):
+                            step: str = None, value: str = None, required=False):
     label = render_label(item_id, display_name)
     input_attrs = {'name': item_id, 'min': min_value, 'max': max_value, 'step': step}
 
@@ -115,6 +116,21 @@ def render_select_row(item_id: str, display_name: str, values: list, selected: s
     select = render_select(item_id, values, selected)
 
     return render_row(label, select)
+
+
+def render_date_row(item_id: str, display_name: str, value: str = None):
+    label = render_label(item_id, display_name)
+    input_attrs = {'name': item_id, 'value': value}
+    input_date = render_input('date', input_attrs)
+
+    return render_row(label, input_date)
+
+
+def render_file_row(item_id: str, display_name: str, required=False):
+    label = render_label(item_id, display_name)
+    input_file = render_input('file', {'name': item_id}, required=required)
+
+    return render_row(label, input_file)
 
 
 def render_submit():

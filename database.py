@@ -1,5 +1,6 @@
 import mysql.connector
 import os
+import datetime
 
 MYSQL_CONFIG = {
     'user': 'is8204',
@@ -54,3 +55,11 @@ def prep_int(value):
 
 def prep_bool(value):
     return '1' if value else '0'
+
+
+def prep_date(value):
+    if not value:
+        return 'NULL'
+
+    value = datetime.datetime.strptime(value, '%Y-%m-%d').strftime('%Y-%m-%d')
+    return f"'{value}'"
