@@ -9,18 +9,18 @@
 </head>
 <body>
 <div class="header">
-    <a href="/" class="logo">База турнірів по го</a>
-    <a href="/players/add">Додати гравця</a>
+    <a href="{{ url_for('index.index') }}" class="logo">База турнірів по го</a>
+    <a href="{{ url_for('players.add_player') }}">Додати гравця</a>
     <div class="header-right">
-        <a class="active" href="/players">Гравці</a>
-        <a href="/tournaments">Турніри</a>
+        <a href="{{ url_for('players.players') }}" class="active">Гравці</a>
+        <a href="{{ url_for('tournaments.tournaments') }}">Турніри</a>
     </div>
 </div>
 <div class="table-container">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
-    <li class="{{ category }}">{{ message }}</li>
+    <p class="{{ category }}">{{ message }}</p>
     {% endfor %}
     {% endif %}
     {% endwith %}

@@ -37,16 +37,17 @@ def players():
 
     column_names = ['№ з/п', 'Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN', 'Активний']
     table = render_table(column_names, table_data)
-    return render_template('players.html', table=table)
+    return render_template('player_list.html', table=table)
 
 
 @bp.route('/<string:player_id>', methods=['GET'])
 def player_info(player_id):
+    player = select_player_query(player_id)[0]
     player_data = select_player_query(player_id)[0].get_attrs(*PLAYER_INFO_ATTRS)
     data = zip(['Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN', 'Активний'], player_data)
     column_names = ['Поле', 'Значення']
     table = render_table(column_names, data)
-    return render_template('player.html', player_data=player_data, table=table, player_id=player_id)
+    return render_template('player_info.html', player=player, table=table)
 
 
 @bp.route('/add', methods=['GET', 'POST'])
@@ -85,8 +86,7 @@ def add_player():
 @bp.route('/<string:player_id>/edit', methods=['GET', 'POST'])
 def edit_player(player_id):
     if request.method == 'POST':
-        print(dict(request.form))
-        update_player_query(player_id, is_active=request.form.getlist('is_active'), **request.form)
+        update_player_query(player_id, **request.form)
         return redirect(f'/players/{player_id}')
 
     player = select_player_query(player_id)[0]

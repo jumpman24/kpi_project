@@ -1,7 +1,8 @@
-from database import execute_query, prep_value
-from .country import Country
 from typing import List
+
+from database import execute_query, prep_string, prep_int
 from models.models import City
+from .country import Country
 
 
 def select_city(cid: int = None) -> List[City]:
@@ -29,9 +30,9 @@ LEFT JOIN country c2 ON c.country_id=c2.id
     return cities
 
 
-def insert_city(name: str, country_id: int = None):
-    name = prep_value(name)
-    country_id = prep_value(country_id)
+def insert_city(name, country_id=None):
+    name = prep_string(name)
+    country_id = prep_int(country_id)
     query = f"""
 INSERT INTO city 
     (name, country_id)
@@ -42,10 +43,9 @@ VALUES
     return execute_query(query)
 
 
-def update_city(city_id: int, name: str = None, country_id: int = None):
-    city = select_city(city_id)[0]
-    name = prep_value(name or city.name)
-    country_id = prep_value(country_id or city.country.id)
+def update_city(city_id, name=None, country_id=None):
+    name = prep_string(name)
+    country_id = prep_int(country_id)
     query = f"""
 UPDATE city SET
 name = {name}, 
@@ -56,7 +56,7 @@ WHERE id = {city_id}
     return execute_query(query)
 
 
-def delete_city(city_id: int):
+def delete_city(city_id):
     query = f"DELETE FROM city WHERE id = {city_id}"
 
     return execute_query(query)

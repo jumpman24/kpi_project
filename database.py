@@ -29,50 +29,28 @@ def execute_query(query):
     return results
 
 
-def prep_value(value=None, default='NULL'):
+def prep_string(value):
     if value is None:
-        return default
+        return 'NULL'
 
-    if isinstance(value, str):
-        value = value.replace("'", "\\'")
-        return f"'{value}'"
-
-    if isinstance(value, bool):
-        return f"{int(value)}"
-
-    if isinstance(value, int):
-        return f"{value}"
-
-    if isinstance(value, float):
-        return f"{value:.3f}"
-
-
-def prep_string(value, default='NULL'):
-    if value is None:
-        return default
     value = value.replace("'", "\\'")
     return f"'{value}'"
 
 
-def prep_float(value, default='NULL'):
+def prep_float(value):
     if value is None or value == '':
-        return default
+        return 'NULL'
 
     value = float(value)
     return f"{value:.3f}"
 
 
-def prep_int(value, default='NULL'):
+def prep_int(value):
     if value is None or value == '':
-        return default
+        return 'NULL'
 
-    value = int(value)
-    return f"{value}"
+    return f"{int(value)}"
 
 
-def prep_bool(value, default='NULL'):
-    if value is None:
-        return default
-
-    value = int(bool(value))
-    return f"{value}"
+def prep_bool(value):
+    return '1' if value else '0'

@@ -10,10 +10,10 @@
 <body>
 <div class="header">
     <a href="/" class="logo">База турнірів по го</a>
-    <a href="/tournaments/add">Завантажити турнір</a>
+    <a href="{{ url_for('tournaments.add_tournament') }}">Завантажити</a>
     <div class="header-right">
-        <a href="/players">Гравці</a>
-        <a class="active" href="/tournaments">Турніри</a>
+        <a href="{{ url_for('players.players') }}">Гравці</a>
+        <a href="{{ url_for('tournaments.tournaments') }}" class="active">Турніри</a>
     </div>
 </div>
 

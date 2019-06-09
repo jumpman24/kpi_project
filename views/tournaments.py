@@ -17,3 +17,8 @@ def tournaments():
     column_names = ['№ з/п', 'Назва', 'Місто', 'Дата початку', 'Дата завершення', 'PIN']
     table = render_table(column_names, table_data)
     return render_template('tournaments.html', table=table)
+
+
+@bp.route('/upload', methods=['GET'])
+def upload_tournament():
+    return "Add tournament"

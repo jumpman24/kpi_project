@@ -7,11 +7,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
-<div>
-    <a href="/players">Players</a>
-    <br>
-    <br>
-    <a href="/tournaments">Tournaments</a>
+<div class="header">
+    <a href="{{ url_for('index.index') }}" class="logo">База турнірів по го</a>
+    <div class="header-right">
+        <a href="{{ url_for('players.players') }}">Гравці</a>
+        <a href="{{ url_for('tournaments.tournaments') }}">Турніри</a>
+    </div>
 </div>
 </body>
 </html>

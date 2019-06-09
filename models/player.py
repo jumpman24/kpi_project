@@ -1,9 +1,10 @@
-from database import execute_query, prep_value, prep_string, prep_float, prep_int, prep_bool
-from models.models import Country, City, Rank, NationalRank, Player
 from typing import List
 
+from database import execute_query, prep_string, prep_float, prep_int, prep_bool
+from models.models import Country, City, Rank, NationalRank, Player
 
-def select_player_query(pid: int = None, order_by='rating', desc=True) -> List[Player]:
+
+def select_player_query(pid=None, order_by_rating=True) -> List[Player]:
     query = """
 SELECT 
     p.id, p.last_name, p.first_name, p.PIN, p.rating, p.is_active, 
@@ -20,7 +21,8 @@ LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
     if pid:
         query += f"WHERE p.id = {pid}\n"
 
-    query += f"ORDER BY {order_by}{' DESC' if desc else ''}"
+    if order_by_rating:
+        query += "ORDER BY rating DESC"
 
     result = execute_query(query)
 
@@ -43,8 +45,8 @@ LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
     return players
 
 
-def insert_player_query(last_name, first_name, pin: str = None, rating: float = None, is_active: str = None,
-                        city_id: int = None, rank_id: int = None, national_rank_id: int = None):
+def insert_player_query(last_name, first_name, pin=None, rating=None, is_active=False, city_id=None, rank_id=None,
+                        national_rank_id=None):
     last_name = prep_string(last_name)
     first_name = prep_string(first_name)
     pin = prep_string(pin)
@@ -63,15 +65,13 @@ VALUES
     return execute_query(query)
 
 
-def update_player_query(player_id: int, last_name: str = None, first_name: str = None, pin: str = None, rating: float = None,
-                        is_active: str = None, city_id: int = None, rank_id: int = None, national_rank_id: int = None):
-    player = select_player_query(player_id)[0]
-
-    last_name = prep_string(last_name, player.last_name)
-    first_name = prep_string(first_name, player.first_name)
-    pin = prep_string(pin, player.pin)
-    rating = prep_float(rating, player.rating)
-    is_active = prep_bool(is_active, player.is_active)
+def update_player_query(player_id, last_name=None, first_name=None, pin=None, rating=None, is_active=None, city_id=None,
+                        rank_id=None, national_rank_id=None):
+    last_name = prep_string(last_name)
+    first_name = prep_string(first_name, )
+    pin = prep_string(pin)
+    rating = prep_float(rating)
+    is_active = prep_bool(is_active)
     city_id = prep_int(city_id)
     rank_id = prep_int(rank_id)
     national_rank_id = prep_int(national_rank_id)
