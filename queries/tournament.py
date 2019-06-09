@@ -53,3 +53,21 @@ WHERE id= {tournament_id}
 """
 
     return execute_query(query)
+
+
+def insert_tournament_query(name, pin, date_start, date_end, is_ranked, city_id):
+    name = prep_string(name)
+    pin = prep_string(pin)
+    date_start = prep_date(date_start)
+    date_end = prep_date(date_end)
+    is_ranked = prep_bool(is_ranked)
+    city_id = prep_int(city_id)
+
+    query = f"""
+INSERT INTO tournament
+    (name, PIN, date_start, date_end, is_ranked, city_id)
+VALUES
+    ({name}, {pin}, {date_start}, {date_end}, {is_ranked}, {city_id})
+"""
+
+    return execute_query(query)

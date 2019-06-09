@@ -1,5 +1,4 @@
 from collections import defaultdict
-from datetime import date
 from functools import total_ordering, reduce
 
 
@@ -36,6 +35,10 @@ class Country(BaseModel):
     def __str__(self):
         return self.name or ''
 
+    @classmethod
+    def empty(cls):
+        return cls(None, None, None)
+
 
 class City(BaseModel):
     def __init__(self, city_id, name, country: Country):
@@ -45,6 +48,10 @@ class City(BaseModel):
 
     def __str__(self):
         return self.name or ''
+
+    @classmethod
+    def empty(cls):
+        return cls(None, None, Country.empty())
 
 
 class Rank(BaseModel):
@@ -56,6 +63,10 @@ class Rank(BaseModel):
     def __str__(self):
         return self.name or ''
 
+    @classmethod
+    def empty(cls):
+        return cls(None, None, None)
+
 
 class NationalRank(BaseModel):
     def __init__(self, national_rank_id, name, abbreviate):
@@ -66,10 +77,14 @@ class NationalRank(BaseModel):
     def __str__(self):
         return self.name or ''
 
+    @classmethod
+    def empty(cls):
+        return cls(None, None, None)
+
 
 class Player(BaseModel):
-    def __init__(self, player_id: int, last_name: str, first_name: str, pin: str, rating: float,
-                 is_active: bool, city: City, rank: Rank, national_rank: NationalRank):
+    def __init__(self, player_id, last_name, first_name, pin, rating, is_active, city: City, rank: Rank,
+                 national_rank: NationalRank):
         self.id = player_id
         self.last_name = last_name
         self.first_name = first_name
@@ -79,6 +94,10 @@ class Player(BaseModel):
         self.city = city
         self.rank = rank
         self.national_rank = national_rank
+
+    @classmethod
+    def empty(cls):
+        return cls(None, None, None, None, None, None, City.empty(), Rank.empty(), NationalRank.empty())
 
     @property
     def full_name(self):
@@ -95,8 +114,7 @@ class Player(BaseModel):
 
 
 class Tournament(BaseModel):
-    def __init__(self, tournament_id: int, name: str, pin: str, date_start: date, date_end: date,
-                 is_ranked: bool, city: City):
+    def __init__(self, tournament_id, name, pin, date_start, date_end, is_ranked, city: City):
         self.id = tournament_id
         self.name = name
         self.pin = pin
@@ -108,11 +126,14 @@ class Tournament(BaseModel):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def empty(cls):
+        return cls(None, None, None, None, None, None, City.empty())
+
 
 class Participant(BaseModel):
-    def __init__(self, participant_id: int, player: Player, tournament: Tournament, place: int,
-                 rank: Rank = None,
-                 rating_start: float = None, rating_end: float = None):
+    def __init__(self, participant_id, player: Player, tournament: Tournament, place, rank: Rank, rating_start=None,
+                 rating_end=None):
         self.id = participant_id
         self.player = player
         self.tournament = tournament
@@ -126,15 +147,17 @@ class Participant(BaseModel):
             return f"{self.place} {self.player}"
         return "-- no player --"
 
+    @classmethod
+    def empty(cls):
+        return cls(None, Player.empty(), Tournament.empty(), None, Rank.empty(), None, None)
+
     def __bool__(self):
         return bool(self.player)
 
 
 class Pairing(BaseModel):
-    def __init__(self, pairing_id, player: Participant, round: int, opponent: Participant = None,
-                 color: str = None,
-                 handicap: int = 0, result: bool = None, round_skip: bool = False,
-                 is_technical: bool = False):
+    def __init__(self, pairing_id, player: Participant, round, opponent: Participant = None, color=None, handicap=None,
+                 result=None, round_skip=False, is_technical=False):
         self.id = pairing_id
         self.player = player
         self.round = round
@@ -147,6 +170,10 @@ class Pairing(BaseModel):
 
     def __str__(self):
         return f"{self.player} {self.get_result()}"
+
+    @classmethod
+    def empty(cls):
+        return cls(None, Participant.empty(), None, Participant.empty(), None, None, None)
 
     def get_result(self, color_and_handicap=False):
         if self.round_skip or not self.opponent:
@@ -188,4 +215,3 @@ class TournamentTable(BaseModel):
             table_data.append([place, full_name, city, rank, rating] + results)
 
         return table_data, len(table_data[0])
-

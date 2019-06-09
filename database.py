@@ -15,7 +15,7 @@ def execute_query(query):
     connection = mysql.connector.connect(**MYSQL_CONFIG)
     cursor = connection.cursor()
 
-    # print(query)
+    print(query)
     cursor.execute(query)
 
     results = []
@@ -23,6 +23,9 @@ def execute_query(query):
         results.append(row)
 
     connection.commit()
+
+    if query.strip().startswith('INSERT'):
+        results = cursor.lastrowid
 
     cursor.close()
     connection.close()

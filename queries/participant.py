@@ -1,8 +1,8 @@
-from database import execute_query
-from models import Country, City, Rank, NationalRank, Player, Tournament, Participant, Pairing
+from database import execute_query, prep_int, prep_float
+from models import Country, City, Rank, NationalRank, Player, Tournament, Participant
 
 
-def select_participant_query(tournament_id, player_id=None):
+def select_participant_query(pid=None, tournament_id=None, player_id=None):
     query = f"""
 SELECT
     tp.id, tp.place, tp.rating_start, tp.rating_end, 
@@ -32,11 +32,13 @@ LEFT JOIN rank r ON p.rank_id=r.id
 LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
 
 LEFT JOIN rank r2 ON tp.rank_id=r2.id
-
-WHERE tp.tournament_id = {tournament_id}
 """
-    if player_id:
-        query += f"AND p1.id = {player_id}\n"
+    if pid:
+        query += f'WHERE tp.id = {pid}\n'
+    elif tournament_id:
+        query += f'WHERE tp.tournament_id = {tournament_id}\n'
+    elif player_id:
+        query += f"WHERE p1.id = {player_id}\n"
 
     query += 'ORDER BY place ASC'
 
@@ -76,3 +78,25 @@ WHERE tp.tournament_id = {tournament_id}
         participants.append(participant)
 
     return participants
+
+
+def insert_participant_query(player_id, tournament_id, place, rank_id, rating_start, rating_end):
+    player_id = prep_int(player_id)
+    tournament_id = prep_int(tournament_id)
+    rank_id = prep_int(rank_id)
+    place = prep_int(place)
+    rating_start = prep_float(rating_start)
+    rating_end = prep_float(rating_end)
+
+    query = f"""INSERT INTO participant
+    (player_id, tournament_id, place, rank_id, rating_start, rating_end)
+VALUES
+    ({player_id}, {tournament_id}, {place}, {rank_id}, {rating_start}, {rating_end})
+"""
+
+    return execute_query(query)
+
+
+def delete_participant_query(tournament_id):
+    query = f"DELETE FROM participant WHERE tournament_id = {tournament_id}"
+    return execute_query(query)

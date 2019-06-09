@@ -4,7 +4,13 @@ import mysql.connector
 from flask import Blueprint, render_template, url_for, request, redirect, flash
 
 from models import TournamentTable
-from queries import select_tournament_query, update_tournament_query, select_pairing_query, select_city
+from queries import (
+    select_tournament_query,
+    insert_tournament_query,
+    update_tournament_query,
+    select_pairing_query,
+    select_city
+)
 from utils import (
     render_table,
     render_link,
@@ -16,8 +22,16 @@ from utils import (
     render_submit
 )
 
+from parser import parse_tournament_table
+
 bp = Blueprint('tournaments', __name__, url_prefix='/tournaments')
+ALLOWED_EXTENSIONS = {'txt', 'csv'}
 TOURNAMENT_LIST_ATTRS = ['name', 'city.name', 'date_start', 'date_end', 'pin', 'is_ranked']
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @bp.route('/', methods=['GET'])
@@ -52,7 +66,6 @@ def edit_tournament(tournament_id):
         update_data['is_ranked'] = 'is_ranked' in update_data.keys()
         update_data['date_start'] = request.form.getlist('date_start')[0]
         update_data['date_end'] = request.form.getlist('date_end')[0]
-        print(update_data)
         try:
             update_tournament_query(tournament_id, **update_data)
             flash('Дані турніру оновлені', 'isa_success')
@@ -88,7 +101,23 @@ def add_tournament():
 
     if request.method == 'POST':
         file = request.files['file']
-        print(file)
+
+        filename = file.filename
+        if not filename:
+            flash('Додайте файл з турнірними даними', 'isa_warning')
+            return redirect(url_for('.add_tournament'))
+
+        if not allowed_file(filename):
+            flash('Файл має бути текстовим', 'isa_error')
+            return redirect(url_for('.add_tournament'))
+
+        update_data = dict(request.form)
+        update_data['is_ranked'] = 'is_ranked' in update_data.keys()
+        update_data['date_start'] = request.form.getlist('date_start')[0]
+        update_data['date_end'] = request.form.getlist('date_end')[0]
+        tournament_id = insert_tournament_query(**update_data)
+        parse_tournament_table(file.read(), tournament_id, 0, 1, 2, 3, 4, 5, 7, 11)
+        return redirect(url_for('.tournament_info', tournament_id=tournament_id))
 
     cities = [c.get_attrs('id', 'name') for c in select_city()]
 

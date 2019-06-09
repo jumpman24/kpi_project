@@ -5,7 +5,6 @@ from views import index_bp, players_bp, tournaments_bp
 import os
 
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
 
 def create_app():

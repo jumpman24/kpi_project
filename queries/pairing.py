@@ -1,4 +1,4 @@
-from database import execute_query
+from database import execute_query, prep_string, prep_int, prep_bool
 from models import Country, City, Rank, NationalRank, Player, Tournament, Participant, Pairing
 
 
@@ -124,3 +124,32 @@ WHERE tp.tournament_id = {tournament_id}
         pairings.append(pairing)
 
     return pairings
+
+
+def insert_pairing_query(player_id, round, opponent_id, color, handicap, result, round_skip, is_technical):
+    player_id = prep_int(player_id)
+    round = prep_int(round)
+    opponent_id = prep_int(opponent_id)
+    color = prep_string(color)
+    handicap = prep_int(handicap)
+    result = prep_int(result)
+    round_skip = prep_bool(round_skip)
+    is_technical = prep_bool(is_technical)
+    query = f"""
+INSERT INTO pairing
+    (player_id, round, opponent_id, color, handicap, result, round_skip, is_technical)
+VALUES
+    ({player_id}, {round}, {opponent_id}, {color}, {handicap}, {result}, {round_skip}, {is_technical})
+"""
+    return execute_query(query)
+
+
+def delete_pairing_query(tournament_id=None):
+    if tournament_id is None:
+        return
+
+    query = f"""
+DELETE FROM pairing
+WHERE player_id IN (SELECT id FROM participant WHERE tournament_id = {tournament_id})
+"""
+    return execute_query(query)

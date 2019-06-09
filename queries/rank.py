@@ -1,6 +1,8 @@
-from database import execute_query
-from models import Rank
 from typing import List
+
+from database import execute_query
+from database import prep_string
+from models import Rank
 
 
 def select_rank(rid: int = None) -> List[Rank]:
