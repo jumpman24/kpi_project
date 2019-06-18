@@ -38,9 +38,13 @@ LEFT JOIN rank r2 ON tp.rank_id=r2.id
     elif tournament_id:
         query += f'WHERE tp.tournament_id = {tournament_id}\n'
     elif player_id:
-        query += f"WHERE p1.id = {player_id}\n"
+        query += f"WHERE p.id = {player_id}\n"
 
-    query += 'ORDER BY place ASC'
+    if player_id:
+        query += 'ORDER BY t.date_start DESC'
+
+    elif tournament_id:
+        query += 'ORDER BY place ASC'
 
     result = execute_query(query)
 

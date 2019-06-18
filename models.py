@@ -205,13 +205,15 @@ class TournamentTable(BaseModel):
 
         table_data = []
         for participant, results in result_dict.items():
-            place, full_name, city, rank, rating = participant.get_attrs(
+            place, player_id, full_name, city, rank, rating = participant.get_attrs(
                 'place',
+                'player.id',
                 'player.full_name',
                 'player.city.name',
                 'rank.name',
-                'rating_start'
+                'rating_start',
             )
+            full_name = f'<a href="/players/{player_id}">{full_name}</a>'
             table_data.append([place, full_name, city, rank, rating] + results)
 
         return table_data, len(table_data[0])

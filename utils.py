@@ -134,4 +134,4 @@ def render_file_row(item_id: str, display_name: str, required=False):
 
 
 def render_submit():
-    return render_row('', render_input('submit', {'value': 'Submit'}))
+    return render_row('', render_input('submit', {'value': 'OK'}))

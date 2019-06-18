@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Index</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}" />
 </head>
 <body>
 <div class="header">
@@ -12,6 +13,24 @@
     <div class="header-right">
         <a href="{{ url_for('players.players') }}">Гравці</a>
         <a href="{{ url_for('tournaments.tournaments') }}">Турніри</a>
+    </div>
+</div>
+<div class="table-container">
+    <div style="display:inline-block; width:50%;">
+        <table class="ugd_table">
+            <tr><th>ТОП-10 гравців</th></tr>
+            {% for p in players %}
+            <tr><td><a href="{{ url_for('players.player_info', player_id=p.id) }}">{{ p.full_name }}</a></td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div style="display:inline-block; width:50%;">
+        <table class="ugd_table">
+            <tr><th>Останні турніри</th></tr>
+            {% for t in tournaments %}
+            <tr><td><a href="{{ url_for('tournaments.tournament_info', tournament_id=t.id) }}">{{ t.name }}</a></td></tr>
+            {% endfor %}
+        </table>
     </div>
 </div>
 </body>

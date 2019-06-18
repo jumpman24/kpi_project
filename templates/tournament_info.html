@@ -57,9 +57,11 @@
         </tr>
         {% for row in table %}
         <tr>
-            {% for item in row[:5] %}
-            <td style="color: black">{{ item }}</td>
-            {% endfor %}
+            <td style="color: black">{{ row[0] }}</td>
+            <td style="color: black">{{ row[1] | safe }}</td>
+            <td style="color: black">{{ row[2] }}</td>
+            <td style="color: black">{{ row[3] }}</td>
+            <td style="color: black">{{ row[4] }}</td>
             {% for item in row[5:] %}
             {% if '+' in item|string %}
             <td style="color: green">{{ item }}</td>

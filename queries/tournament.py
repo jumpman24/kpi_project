@@ -1,4 +1,3 @@
-from models import Country, City, Tournament
 from database import execute_query, prep_string, prep_int, prep_bool, prep_date
 from models import Country, City, Tournament
 
@@ -14,7 +13,9 @@ LEFT JOIN city c ON t.city_id=c.id
 LEFT JOIN country c2 ON c.country_id=c2.id
 """
     if tid:
-        query += f"WHERE t.id = {tid}"
+        query += f"WHERE t.id = {tid}\n"
+
+    query += 'ORDER BY t.date_start DESC'
 
     result = execute_query(query)
 

@@ -9,6 +9,7 @@ from queries import (
     insert_player_query,
     update_player_query,
     delete_player_query,
+    select_participant_query,
 )
 from utils import (
     render_table,
@@ -33,6 +34,7 @@ def players():
     for idx, player in enumerate(all_players, start=1):
         tr_data = [render_link(f"/players/{player.id}", idx)] + player.get_attrs(*PLAYER_INFO_ATTRS)
         tr_data[1] = render_link(f"/players/{player.id}", player.full_name)
+        tr_data[-1] = 'Так' if tr_data[-1] else ''
         table_data.append(tr_data)
 
     column_names = ['№ з/п', 'Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN', 'Активний']
@@ -43,11 +45,8 @@ def players():
 @bp.route('/<string:player_id>', methods=['GET'])
 def player_info(player_id):
     player = select_player_query(player_id)[0]
-    player_data = select_player_query(player_id)[0].get_attrs(*PLAYER_INFO_ATTRS)
-    data = zip(['Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN', 'Активний'], player_data)
-    column_names = ['Поле', 'Значення']
-    table = render_table(column_names, data)
-    return render_template('player_info.html', player=player, table=table)
+    participant = select_participant_query(player_id=player.id)
+    return render_template('player_info.html', player=player, participant=participant)
 
 
 @bp.route('/add', methods=['GET', 'POST'])
