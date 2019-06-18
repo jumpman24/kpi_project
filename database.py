@@ -33,6 +33,19 @@ def execute_query(query):
     return results
 
 
+def execute_procedure(procedure_name):
+    connection = mysql.connector.connect(**MYSQL_CONFIG)
+    cursor = connection.cursor()
+
+    print(f"CALL {procedure_name}();")
+    cursor.callproc(procedure_name)
+
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+
 def prep_string(value):
     if value is None:
         return 'NULL'

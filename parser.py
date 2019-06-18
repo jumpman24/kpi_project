@@ -14,6 +14,7 @@ from queries import (
     insert_pairing_query,
     delete_pairing_query,
 )
+from database import execute_procedure
 
 RESULT_REGEX = re.compile(r'(?P<opponent>\d+)(?P<result>[+\-])(?P<is_technical>!)?(/(?P<color>[wbh])(?P<handicap>\d))?')
 
@@ -36,7 +37,6 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
 
     rounds = {}
 
-    table_data = []
     for row in data[3:]:
         country_code = row[column_slices[country_idx]].strip()
         city_name = row[column_slices[city_idx]].strip()
@@ -110,3 +110,5 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
                 opponent = Pairing.empty()
 
             insert_pairing_query(player.id, i + 1, opponent.id, color, handicap, result, round_skip, is_technical)
+
+    execute_procedure('remove_incorrect_pairings')
