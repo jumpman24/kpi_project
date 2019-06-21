@@ -72,7 +72,7 @@ class BaseModel:
             return ''
 
         valid_columns = []
-        for col, asc in order_by.items():
+        for col, asc in order_by:
             if col in cls.columns.keys():
                 key = table_alias + '.' + col if table_alias else col
                 if asc:
@@ -82,6 +82,8 @@ class BaseModel:
 
         if valid_columns:
             return '\nORDER BY ' + ', '.join(valid_columns) + '\n'
+
+        return ''
 
     @classmethod
     def execute_insert(cls, data: List[Dict]):

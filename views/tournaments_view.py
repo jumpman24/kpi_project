@@ -3,11 +3,8 @@ import datetime
 import mysql.connector
 from flask import Blueprint, render_template, url_for, request, redirect, flash
 
-from models import City, TournamentTable
+from models import City, Tournament, TournamentTable
 from queries import (
-    select_tournament_query,
-    insert_tournament_query,
-    update_tournament_query,
     select_pairing_query,
 )
 from utils import (
@@ -35,7 +32,7 @@ def allowed_file(filename):
 
 @bp.route('/', methods=['GET'])
 def tournaments():
-    tournament_list = select_tournament_query()
+    tournament_list = Tournament.select()
     table_data = []
     for idx, tournament in enumerate(tournament_list, start=1):
         tr_data = [render_link(url_for('.tournament_info', tournament_id=tournament.id), idx),
@@ -50,7 +47,7 @@ def tournaments():
 
 @bp.route('/<string:tournament_id>', methods=['GET'])
 def tournament_info(tournament_id):
-    tournament = select_tournament_query(tournament_id)[0]
+    tournament = Tournament.select({'id': tournament_id})[0]
     pairings = select_pairing_query(tournament_id)
     tournament_table, length = TournamentTable(tournament, pairings).get_table()
     return render_template('tournament_info.html', tournament=tournament, table=tournament_table, length=length)
@@ -66,15 +63,15 @@ def edit_tournament(tournament_id):
         update_data['date_start'] = request.form.getlist('date_start')[0]
         update_data['date_end'] = request.form.getlist('date_end')[0]
         try:
-            update_tournament_query(tournament_id, **update_data)
+            Tournament.execute_update(tournament_id, update_data)
             flash('Дані турніру оновлені', 'isa_success')
             return redirect(url_for('.tournament_info', tournament_id=tournament_id))
+
         except mysql.connector.Error as err:
             flash(err.msg, 'isa_error')
+            return redirect(edit_url)
 
-        return redirect(edit_url)
-
-    tournament = select_tournament_query(tournament_id)[0]
+    tournament = Tournament.select({'id': tournament_id})[0]
     cities = City.select_attrs(['id', 'name'])
 
     form = '\n'.join([
@@ -110,11 +107,12 @@ def add_tournament():
             flash('Файл має бути текстовим', 'isa_error')
             return redirect(url_for('.add_tournament'))
 
-        update_data = dict(request.form)
-        update_data['is_ranked'] = 'is_ranked' in update_data.keys()
-        update_data['date_start'] = request.form.getlist('date_start')[0]
-        update_data['date_end'] = request.form.getlist('date_end')[0]
-        tournament_id = insert_tournament_query(**update_data)
+        insert_data = dict(request.form)
+        insert_data['is_ranked'] = 'is_ranked' in insert_data.keys()
+        insert_data['date_start'] = request.form.getlist('date_start')[0]
+        insert_data['date_end'] = request.form.getlist('date_end')[0]
+        # tournament_id = insert_tournament_query(**update_data)
+        tournament_id = Tournament.execute_insert([insert_data])[0]
         parse_tournament_table(file.read(), tournament_id, 0, 1, 2, 3, 4, 5, 7, 11)
         return redirect(url_for('.tournament_info', tournament_id=tournament_id))
 

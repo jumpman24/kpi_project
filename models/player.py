@@ -60,7 +60,7 @@ LEFT JOIN country c2 ON c.country_id=c2.id
 LEFT JOIN `rank` r ON p.rank_id=r.id
 LEFT JOIN national_rank nr ON p.national_rank_id=nr.id"""
         query += cls.prepare_where(filters, 'p')
-        query += cls.prepare_order(order_by or {'rating': False}, 'p')
+        query += cls.prepare_order(order_by or [['rating', False]], 'p')
 
         result = execute_query(query)
 
