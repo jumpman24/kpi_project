@@ -1,11 +1,8 @@
 import re
 
-from models import Rank, Pairing
+from database import execute_procedure
+from models import Country, City, Rank, Pairing, Player
 from queries import (
-    select_rank,
-    select_country,
-    select_city,
-    insert_city,
     select_player_query,
     insert_player_query,
     select_participant_query,
@@ -14,12 +11,13 @@ from queries import (
     insert_pairing_query,
     delete_pairing_query,
 )
-from database import execute_procedure
 
-RESULT_REGEX = re.compile(r'(?P<opponent>\d+)(?P<result>[+\-])(?P<is_technical>!)?(/(?P<color>[wbh])(?P<handicap>\d))?')
+RESULT_REGEX = re.compile(
+    r'(?P<opponent>\d+)(?P<result>[+\-])(?P<is_technical>!)?(/(?P<color>[wbh])(?P<handicap>\d))?')
 
 
-def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, country_idx, city_idx, rank_idx, rating_idx,
+def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, country_idx, city_idx,
+                           rank_idx, rating_idx,
                            first_round_idx,
                            last_round_idx):
     data = data.decode().split('\n')
@@ -29,10 +27,8 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
     end_indices = [i for i in range(len(data[0])) if data[0][i] == ' '] + [len(data[0])]
     column_slices = [slice(*col) for col in zip(start_indices, end_indices)]
 
-    all_countries = select_country()
-    all_cities = select_city()
-    all_ranks = select_rank()
-    all_players = select_player_query()
+    all_cities = City.select()
+    all_players = Player.select()
     participant_list = select_participant_query(tournament_id=tournament_id)
 
     rounds = {}
@@ -54,14 +50,18 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
         if len(cities) > 1:
             cities = [c for c in all_cities if c.country.code.lower() == country_code.lower()]
         if not cities:
-            country_id = [c.id for c in all_countries if c.code.lower() == country_code.lower()][0]
-            city_id = insert_city(city_name, country_id)
-            city = select_city(city_id)[0]
+            country_id = Country.select({'code': country_code.upper()})[0]
+            city_id = City.execute_insert([{'name': city_name, 'country_id': country_id}])[0]
+            city = City.select({'id': city_id})[0]
         else:
             city = cities[0]
 
-        ranks = [r for r in all_ranks if r.name == rank_name]
-        rank = ranks[0] if ranks else Rank(None, None, None)
+        rank = Rank.select({'name': rank_name})
+
+        if not rank:
+            rank = Rank.select({'abbreviate': rank_name})
+        else:
+            rank = Rank(None, None, None)
 
         players = [p for p in all_players if
                    p.last_name.lower() == last_name.lower() and p.first_name.lower() == first_name.lower()]
@@ -70,7 +70,15 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
             players = [p for p in players if p.city.name == city_name]
 
         if not players:
-            player_id = insert_player_query(last_name, first_name, None, rating_start, False, city.id, rank.id, None)
+            player_data = {
+                'last_name': last_name,
+                'first_name': first_name,
+                'rating': rating_start,
+                'city_id': city.id,
+                'rank_id': rank.id,
+                'is_active': False,
+            }
+            player_id = Player.execute_insert([player_data])[0]
             player = select_player_query(player_id)
         else:
             player = players[0]
@@ -81,10 +89,12 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
         if participants:
             participant = participants[0]
         else:
-            participant_id = insert_participant_query(player.id, tournament_id, place, rank.id, rating_start, None)
+            participant_id = insert_participant_query(player.id, tournament_id, place, rank.id,
+                                                      rating_start, None)
             participant = select_participant_query(participant_id)[0]
 
-        rounds[participant] = [row[column_slices[i]].strip() for i in range(first_round_idx, last_round_idx + 1)]
+        rounds[participant] = [row[column_slices[i]].strip() for i in
+                               range(first_round_idx, last_round_idx + 1)]
 
     participants = select_participant_query(tournament_id=tournament_id)
 
@@ -109,6 +119,7 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
                 color, handicap = None, None
                 opponent = Pairing.empty()
 
-            insert_pairing_query(player.id, i + 1, opponent.id, color, handicap, result, round_skip, is_technical)
+            insert_pairing_query(player.id, i + 1, opponent.id, color, handicap, result, round_skip,
+                                 is_technical)
 
     execute_procedure('remove_incorrect_pairings')

@@ -1,16 +1,15 @@
 import mysql.connector
 from flask import Blueprint, render_template, request, redirect, flash
 
+from models import City, Rank, NationalRank
 from queries import (
-    select_city,
-    select_rank,
-    select_national_rank,
     select_player_query,
     insert_player_query,
     update_player_query,
     delete_player_query,
     select_participant_query,
 )
+
 from utils import (
     render_table,
     render_link,
@@ -62,9 +61,10 @@ def add_player():
         except mysql.connector.Error as err:
             flash(err.msg)
 
-    cities = [c.get_attrs('id', 'name') for c in select_city()]
-    ranks = [r.get_attrs('id', 'name') for r in select_rank()]
-    national_ranks = [nr.get_attrs('id', 'name') for nr in select_national_rank()]
+    cities = City.select_attrs(['id', 'name'])
+    ranks = Rank.select_attrs(['id', 'name'])
+    national_ranks = NationalRank.select_attrs(['id', 'name'])
+
     form = '\n'.join([
         '<div class="container">',
         f'<form action="/players/add" method="post">',
@@ -100,9 +100,9 @@ def edit_player(player_id):
 
     player = select_player_query(player_id)[0]
 
-    cities = [c.get_attrs('id', 'name') for c in select_city()]
-    ranks = [r.get_attrs('id', 'name') for r in select_rank()]
-    national_ranks = [nr.get_attrs('id', 'name') for nr in select_national_rank()]
+    cities = City.select_attrs(['id', 'name'])
+    ranks = Rank.select_attrs(['id', 'name'])
+    national_ranks = NationalRank.select_attrs(['id', 'name'])
 
     form = '\n'.join([
         '<div class="container">',

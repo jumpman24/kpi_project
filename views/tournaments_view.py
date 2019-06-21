@@ -3,13 +3,12 @@ import datetime
 import mysql.connector
 from flask import Blueprint, render_template, url_for, request, redirect, flash
 
-from models import TournamentTable
+from models import City, TournamentTable
 from queries import (
     select_tournament_query,
     insert_tournament_query,
     update_tournament_query,
     select_pairing_query,
-    select_city
 )
 from utils import (
     render_table,
@@ -76,7 +75,7 @@ def edit_tournament(tournament_id):
         return redirect(edit_url)
 
     tournament = select_tournament_query(tournament_id)[0]
-    cities = [c.get_attrs('id', 'name') for c in select_city()]
+    cities = City.select_attrs(['id', 'name'])
 
     form = '\n'.join([
         '<div class="container">',
@@ -119,7 +118,7 @@ def add_tournament():
         parse_tournament_table(file.read(), tournament_id, 0, 1, 2, 3, 4, 5, 7, 11)
         return redirect(url_for('.tournament_info', tournament_id=tournament_id))
 
-    cities = [c.get_attrs('id', 'name') for c in select_city()]
+    cities = City.select_attrs(['id', 'name'])
 
     form = '\n'.join([
         '<div class="container">',
