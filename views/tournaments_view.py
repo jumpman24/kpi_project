@@ -3,7 +3,7 @@ import datetime
 import mysql.connector
 from flask import Blueprint, render_template, url_for, request, redirect, flash
 
-from models import City, Tournament, TournamentTable
+from models import City, Tournament, Pairing, TournamentTable
 from queries import (
     select_pairing_query,
 )
@@ -48,7 +48,7 @@ def tournaments():
 @bp.route('/<string:tournament_id>', methods=['GET'])
 def tournament_info(tournament_id):
     tournament = Tournament.select({'id': tournament_id})[0]
-    pairings = select_pairing_query(tournament_id)
+    pairings = Pairing.select({'tp.tournament_id': tournament_id})
     tournament_table, length = TournamentTable(tournament, pairings).get_table()
     return render_template('tournament_info.html', tournament=tournament, table=tournament_table, length=length)
 

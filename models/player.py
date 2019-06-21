@@ -15,6 +15,7 @@ class Player(BaseModel):
         'rank_id': int,
         'national_rank_id': int,
     }
+    columns_to_order = columns.keys()
 
     def __init__(self, player_id, last_name, first_name, pin, rating, is_active,
                  city: City, rank: Rank, national_rank: NationalRank):

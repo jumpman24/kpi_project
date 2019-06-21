@@ -2,10 +2,7 @@ import mysql.connector
 from flask import Blueprint, render_template, request, redirect
 from flask.helpers import url_for, flash
 
-from models import City, Rank, NationalRank, Player
-from queries import (
-    select_participant_query,
-)
+from models import City, Rank, NationalRank, Player, Participant
 
 from utils import (
     render_table,
@@ -40,7 +37,7 @@ def players():
 @bp.route('/<int:player_id>', methods=['GET'])
 def player_info(player_id):
     player = Player.select({'id': player_id})[0]
-    participant = select_participant_query(player_id=player.id)
+    participant = Participant.select({'player_id': player.id}, [('t.date_start', False)])
     return render_template('player_info.html', player=player, participant=participant)
 
 

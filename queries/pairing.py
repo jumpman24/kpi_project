@@ -106,8 +106,8 @@ WHERE tp.tournament_id = {tournament_id}
                          national_rank1)
 
         participant_rank = Rank(r2_id, r2_name, r2_abbreviate)
-        participant = Participant(tp1_id, player1, tournament, tp_place, participant_rank, tp1_rating_start,
-                                  tp1_rating_end)
+        participant = Participant(tp1_id, tp_place, tp1_rating_start, tp1_rating_end,
+                                  player1, tournament, participant_rank)
 
         country2 = Country(c4_id, c4_name, c4_code)
         city2 = City(c3_id, c3_name, country2)
@@ -117,7 +117,7 @@ WHERE tp.tournament_id = {tournament_id}
                          national_rank2)
 
         opponent_rank = Rank(r4_id, r4_name, r4_abbreviate)
-        opponent = Participant(tp2_id, player2, tournament, tp2_place, opponent_rank, tp2_rating_start, tp2_rating_end)
+        opponent = Participant(tp2_id, tp2_place, tp2_rating_start, tp2_rating_end, player2, tournament, opponent_rank)
 
         pairing = Pairing(tg_id, participant, tg_round, opponent, tg_color, tg_handicap, tg_result, tg_round_skip,
                           tg_is_technical)

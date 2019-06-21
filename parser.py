@@ -1,11 +1,8 @@
 import re
 
 from database import execute_procedure
-from models import Country, City, Rank, Pairing, Player
+from models import Country, City, Rank, Player, Participant, Pairing
 from queries import (
-    select_participant_query,
-    insert_participant_query,
-    delete_participant_query,
     insert_pairing_query,
     delete_pairing_query,
 )
@@ -20,14 +17,16 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
                            last_round_idx):
     data = data.decode().split('\n')
     delete_pairing_query(tournament_id)
-    delete_participant_query(tournament_id=tournament_id)
+    existing_participant_ids = Participant.select({'tournament_id': tournament_id})
+    Participant.execute_delete(existing_participant_ids)
+
     start_indices = [0] + [i + 1 for i in range(len(data[0])) if data[0][i] == ' ']
     end_indices = [i for i in range(len(data[0])) if data[0][i] == ' '] + [len(data[0])]
     column_slices = [slice(*col) for col in zip(start_indices, end_indices)]
 
     all_cities = City.select()
     all_players = Player.select()
-    participant_list = select_participant_query(tournament_id=tournament_id)
+    participant_list = Participant.select({'tournament_id': tournament_id})
 
     rounds = {}
 
@@ -87,14 +86,20 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
         if participants:
             participant = participants[0]
         else:
-            participant_id = insert_participant_query(player.id, tournament_id, place, rank.id,
-                                                      rating_start, None)
-            participant = select_participant_query(participant_id)[0]
+            participant_data = {
+                'player_id': player.id,
+                'tournament_id': tournament_id,
+                'place': place,
+                'rank_id': rank.id,
+                'rating_start': rating_start,
+            }
+            participant_id = Participant.execute_insert([participant_data])
+            participant = Participant.select({'id': participant_id})[0]
 
         rounds[participant] = [row[column_slices[i]].strip() for i in
                                range(first_round_idx, last_round_idx + 1)]
 
-    participants = select_participant_query(tournament_id=tournament_id)
+    participants = Participant.select({'tournament_id': tournament_id})
 
     for player, results in rounds.items():
         for i in range(len(results)):

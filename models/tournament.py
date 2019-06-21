@@ -16,6 +16,7 @@ class Tournament(BaseModel):
         'is_ranked': bool,
         'city_id': int,
     }
+    columns_to_order = columns.keys()
 
     def __init__(self, tournament_id, name, pin, date_start, date_end, is_ranked,
                  city: City):

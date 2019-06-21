@@ -8,7 +8,8 @@ from database import execute_query, prep_string, prep_int, prep_float, prep_bool
 @total_ordering
 class BaseModel:
     table_name = NotImplemented
-    columns = {}
+    columns = NotImplemented
+    columns_to_order = NotImplemented
 
     prepare_map = {
         str: prep_string,
@@ -55,11 +56,10 @@ class BaseModel:
             return ''
 
         valid_filters = {}
-        for col, type_ in cls.columns.items():
-            if filters.get(col):
-                key = table_alias + '.' + col if table_alias else col
-                value = cls._prepare_value(filters[col])
-                valid_filters[key] = value
+        for col in filters:
+            key = table_alias + '.' + col if table_alias else col
+            value = cls._prepare_value(filters[col])
+            valid_filters[key] = value
 
         if valid_filters:
             return '\nWHERE ' + ' AND '.join([f'{k}={v}' for k, v in valid_filters.items()]) + '\n'
@@ -73,7 +73,8 @@ class BaseModel:
 
         valid_columns = []
         for col, asc in order_by:
-            if col in cls.columns.keys():
+
+            if col in cls.columns_to_order:
                 key = table_alias + '.' + col if table_alias else col
                 if asc:
                     valid_columns.append(key + ' ASC')
