@@ -3,8 +3,6 @@ import re
 from database import execute_procedure
 from models import Country, City, Rank, Pairing, Player
 from queries import (
-    select_player_query,
-    insert_player_query,
     select_participant_query,
     insert_participant_query,
     delete_participant_query,
@@ -79,7 +77,7 @@ def parse_tournament_table(data, tournament_id, place_idx, full_name_idx, countr
                 'is_active': False,
             }
             player_id = Player.execute_insert([player_data])[0]
-            player = select_player_query(player_id)
+            player = Player.select({'id': player_id})[0]
         else:
             player = players[0]
 

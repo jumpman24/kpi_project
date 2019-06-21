@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from queries import select_player_query, select_tournament_query
+from queries import select_tournament_query
 from models import Player
 
 bp = Blueprint('index', __name__, url_prefix='/')

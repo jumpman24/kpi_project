@@ -1,12 +1,9 @@
 import mysql.connector
-from flask import Blueprint, render_template, request, redirect, flash
+from flask import Blueprint, render_template, request, redirect
+from flask.helpers import url_for, flash
 
-from models import City, Rank, NationalRank
+from models import City, Rank, NationalRank, Player
 from queries import (
-    select_player_query,
-    insert_player_query,
-    update_player_query,
-    delete_player_query,
     select_participant_query,
 )
 
@@ -21,17 +18,16 @@ from utils import (
 )
 
 bp = Blueprint('players', __name__, url_prefix='/players')
-PLAYER_INFO_ATTRS = ('full_name', 'city.name', 'rating', 'rank.name', 'national_rank.abbreviate', 'pin', 'is_active')
-PLAYER_EDIT_ATTRS = ('last_name', 'first_name', 'rating', 'pin', 'is_active')
-PLAYER_FOREIGN_KEYS = ('city.id', 'rank.id', 'national_rank.id')
 
 
 @bp.route('/', methods=['GET'])
 def players():
-    all_players = select_player_query()
+    all_players = Player.select()
     table_data = []
     for idx, player in enumerate(all_players, start=1):
-        tr_data = [render_link(f"/players/{player.id}", idx)] + player.get_attrs(*PLAYER_INFO_ATTRS)
+        player_data = player.get_attrs('full_name', 'city.name', 'rating', 'rank.name',
+                                       'national_rank.abbreviate', 'pin', 'is_active')
+        tr_data = [render_link(f"/players/{player.id}", idx)] + player_data
         tr_data[1] = render_link(f"/players/{player.id}", player.full_name)
         tr_data[-1] = 'Так' if tr_data[-1] else ''
         table_data.append(tr_data)
@@ -41,9 +37,9 @@ def players():
     return render_template('player_list.html', table=table)
 
 
-@bp.route('/<string:player_id>', methods=['GET'])
+@bp.route('/<int:player_id>', methods=['GET'])
 def player_info(player_id):
-    player = select_player_query(player_id)[0]
+    player = Player.select({'id': player_id})[0]
     participant = select_participant_query(player_id=player.id)
     return render_template('player_info.html', player=player, participant=participant)
 
@@ -55,9 +51,9 @@ def add_player():
         insert_data = dict(request.form)
         insert_data['is_active'] = 'is_active' in insert_data.keys()
         try:
-            insert_player_query(**insert_data)
+            player_id = Player.execute_insert([insert_data])[0]
             flash('Гравець створений', 'isa_success')
-            return redirect('/players')
+            return redirect(url_for('.player_info', player_id=player_id))
         except mysql.connector.Error as err:
             flash(err.msg)
 
@@ -90,15 +86,15 @@ def edit_player(player_id):
         update_data = dict(request.form)
         update_data['is_active'] = 'is_active' in update_data.keys()
         try:
-            update_player_query(player_id, **update_data)
+            Player.execute_update(player_id, **update_data)
             flash('Дані гравця оновлені', 'isa_success')
-            return redirect('/players')
+            return redirect(url_for('.players'))
         except mysql.connector.Error as err:
             flash(err.msg, 'isa_error')
 
-        return redirect(f'/players/{player_id}')
+        return redirect(url_for('.player_info', player_id=player_id))
 
-    player = select_player_query(player_id)[0]
+    player = Player.select({'id': player_id})[0]
 
     cities = City.select_attrs(['id', 'name'])
     ranks = Rank.select_attrs(['id', 'name'])
@@ -126,9 +122,9 @@ def edit_player(player_id):
 @bp.route('/<string:player_id>/delete', methods=['GET', 'POST'])
 def delete_player(player_id):
     try:
-        delete_player_query(player_id)
+        Player.execute_delete([player_id])
         flash('Гравець видалений', 'isa_success')
-        return redirect('/players')
+        return redirect(url_for('.players'))
     except mysql.connector.Error as err:
         flash(err.msg, 'isa_error')
-        return redirect(f'/players/{player_id}')
+        return redirect(url_for('.player_info', player_id=player_id))
