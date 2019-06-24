@@ -45,7 +45,7 @@
         </tr>
         <tr>
             <td class="col-25" style="text-align: right">Рейтинг:</td>
-            <td class="col-75" style="text-align: left"><b>{{ player.rating }}</b></td>
+            <td class="col-75" style="text-align: left"><b>{{ (player.rating|string).rstrip('0').rstrip('.') }}</b></td>
         </tr>
         <tr>
             <td class="col-25" style="text-align: right">Турнірів зіграно:</td>
@@ -59,6 +59,7 @@
             <th>Місто</th>
             <th>Назва</th>
             <th>Місце</th>
+            <th>Рейтинг</th>
         </tr>
         {% for p in participant %}
         <tr>
@@ -66,6 +67,24 @@
             <td>{{ p.tournament.city.name or '' }}</td>
             <td><a href="{{ url_for('tournaments.tournament_info', tournament_id=p.tournament.id) }}">{{ p.tournament.name }}</a></td>
             <td>{{ p.place }}</td>
+            {% if p.rating_end and p.rating_end %}
+                {% if p.rating_start < p.rating_end %}
+                <td style="color: green">{{ (p.rating_start|string).rstrip('0').rstrip('.') }} →
+                                         {{ (p.rating_end|string).rstrip('0').rstrip('.') }}</td>
+                {% elif p.rating_start > p.rating_end %}
+                <td style="color: red">{{ (p.rating_start|string).rstrip('0').rstrip('.') }} →
+                                         {{ (p.rating_end|string).rstrip('0').rstrip('.') }}</td>
+                {% else %}
+                <td style="color: black">{{ (p.rating_start|string).rstrip('0').rstrip('.') }} →
+                                         {{ (p.rating_end|string).rstrip('0').rstrip('.') }}</td>
+                {% endif %}
+            {% elif p.rating_start %}
+            <td style="color: black">{{ (p.rating_start|string).rstrip('0').rstrip('.') }}</td>
+            {% elif p.rating_end %}
+            <td style="color: black">{{ (p.rating_end|string).rstrip('0').rstrip('.') }}</td>
+            {% else %}
+            <td style="color: black"></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </table>

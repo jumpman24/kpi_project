@@ -20,18 +20,7 @@ bp = Blueprint('players', __name__, url_prefix='/players')
 @bp.route('/', methods=['GET'])
 def players():
     all_players = Player.select()
-    table_data = []
-    for idx, player in enumerate(all_players, start=1):
-        player_data = player.get_attrs('full_name', 'city.name', 'rating', 'rank.name',
-                                       'national_rank.abbreviate', 'pin', 'is_active')
-        tr_data = [render_link(f"/players/{player.id}", idx)] + player_data
-        tr_data[1] = render_link(f"/players/{player.id}", player.full_name)
-        tr_data[-1] = 'Так' if tr_data[-1] else ''
-        table_data.append(tr_data)
-
-    column_names = ['№ з/п', 'Прізвище та ім\'я', 'Місто', 'Рейтинг', 'Ранг', 'Розряд', 'PIN', 'Активний']
-    table = render_table(column_names, table_data)
-    return render_template('player_list.html', table=table)
+    return render_template('player_list.html', players=all_players)
 
 
 @bp.route('/<int:player_id>', methods=['GET'])

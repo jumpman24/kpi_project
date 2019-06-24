@@ -24,7 +24,32 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-    {{ table | safe }}
+    {% if players %}
+    <table class="ugd_table">
+        <tr>
+            <th>№ з/п</th>
+            <th>Прізвище та ім'я</th>
+            <th>Місто</th>
+            <th>Рейтинг</th>
+            <th>Ранг</th>
+            <th>Розряд</th>
+            <th>PIN</th>
+            <th>Активний</th>
+        </tr>
+        {% for p in players %}
+        <tr>
+            <td><a href="{{ url_for('players.player_info', player_id=p.id) }}">{{ loop.index }}</a></td>
+            <td><a href="{{ url_for('players.player_info', player_id=p.id) }}">{{ p.full_name }}</a></td>
+            <td>{{ p.city.name or '' }}</td>
+            <td>{{ (p.rating|string).rstrip('0').rstrip('.') or '' }}</td>
+            <td>{{ p.rank.name or '' }}</td>
+            <td>{{ p.national_rank.abbreviate or '' }}</td>
+            <td>{{ p.pin or '' }}</td>
+            <td>{{ '+' if p.is_active else '' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
 </div>
 </body>
 </html>

@@ -47,7 +47,7 @@ def execute_procedure(procedure_name):
 
 
 def prep_string(value):
-    if value is None:
+    if not value:
         return 'NULL'
 
     value = value.replace("'", "\\'")
