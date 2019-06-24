@@ -4,11 +4,11 @@ from . import BaseModel
 
 class Country(BaseModel):
     table_name = 'country'
-    columns = {
-        'id': int,
-        'name': str,
-        'code': str,
-    }
+    columns = [
+        ('id', int),
+        ('name', str),
+        ('code', str),
+    ]
 
     def __init__(self, country_id, name, code):
         self.id = country_id
@@ -23,7 +23,7 @@ class Country(BaseModel):
         return cls(None, None, None)
 
     @classmethod
-    def select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None):
         query = "SELECT id, name, code FROM country "
         query += cls.prepare_where(filters)
         query += cls.prepare_order(order_by)

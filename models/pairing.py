@@ -3,18 +3,18 @@ from . import BaseModel, Country, City, Rank, NationalRank, Player, Participant,
 
 
 class Pairing(BaseModel):
-    columns = {
-        'id': int,
-        'player_id': int,
-        'opponent_id': int,
-        'round': int,
-        'result': bool,
-        'color': str,
-        'handicap': int,
-        'round_skip': bool,
-        'is_technical': bool,
-    }
-    columns_to_order = ['t.id'] + list(columns.keys())
+    table_name = 'pairing'
+    columns = [
+        ('id', int),
+        ('player_id', int),
+        ('opponent_id', int),
+        ('round', int),
+        ('result', bool),
+        ('color', str),
+        ('handicap', int),
+        ('round_skip', bool),
+        ('is_technical', bool),
+    ]
 
     def __init__(self, pairing_id, player: Participant, round, opponent: Participant = None,
                  color=None, handicap=None,
@@ -31,6 +31,27 @@ class Pairing(BaseModel):
 
     def __str__(self):
         return f"{self.player} {self.get_result()}"
+
+    @classmethod
+    def aliased_columns(cls):
+        return Participant.make_aliased_columns('tp') \
+               + Tournament.make_aliased_columns('t') \
+               + City.make_aliased_columns('tc') \
+               + Country.make_aliased_columns('tc2') \
+               + Player.make_aliased_columns('p') \
+               + City.make_aliased_columns('c') \
+               + Country.make_aliased_columns('c2') \
+               + Rank.make_aliased_columns('r') \
+               + NationalRank.make_aliased_columns('nr') \
+               + Rank.make_aliased_columns('r2') \
+               + cls.make_aliased_columns('tg') \
+               + Participant.make_aliased_columns('tp2') \
+               + Player.make_aliased_columns('p2') \
+               + City.make_aliased_columns('c3') \
+               + Country.make_aliased_columns('c4') \
+               + Rank.make_aliased_columns('r3') \
+               + NationalRank.make_aliased_columns('nr2') \
+               + Rank.make_aliased_columns('r4')
 
     @classmethod
     def empty(cls):
@@ -53,7 +74,7 @@ class Pairing(BaseModel):
         return s
 
     @classmethod
-    def select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None):
         query = f"""SELECT
     tp.id, tp.place, tp.rating_start, tp.rating_end, 
 
@@ -107,7 +128,7 @@ LEFT JOIN national_rank nr2 ON p2.national_rank_id=nr2.id
 
 LEFT JOIN rank r4 ON tp2.rank_id=r4.id"""
         query += cls.prepare_where(filters)
-        query += cls.prepare_order([('place', True), ('round', True)])
+        query += cls.prepare_order([('tp.place', True), ('tp.round', True)])
         result = execute_query(query)
 
         pairings = []

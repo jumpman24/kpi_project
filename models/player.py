@@ -4,18 +4,17 @@ from . import BaseModel, Country, City, Rank, NationalRank
 
 class Player(BaseModel):
     table_name = 'player'
-    columns = {
-        'id': int,
-        'last_name': str,
-        'first_name': str,
-        'pin': str,
-        'rating': float,
-        'is_active': bool,
-        'city_id': int,
-        'rank_id': int,
-        'national_rank_id': int,
-    }
-    columns_to_order = columns.keys()
+    columns = [
+        ('id', int),
+        ('last_name', str),
+        ('first_name', str),
+        ('pin', str),
+        ('rating', float),
+        ('is_active', bool),
+        ('city_id', int),
+        ('rank_id', int),
+        ('national_rank_id', int),
+    ]
 
     def __init__(self, player_id, last_name, first_name, pin, rating, is_active,
                  city: City, rank: Rank, national_rank: NationalRank):
@@ -28,6 +27,14 @@ class Player(BaseModel):
         self.city = city
         self.rank = rank
         self.national_rank = national_rank
+
+    @classmethod
+    def aliased_columns(cls):
+        return cls.make_aliased_columns('p') \
+               + City.make_aliased_columns('c') \
+               + Country.make_aliased_columns('c2') \
+               + Rank.make_aliased_columns('r') \
+               + NationalRank.make_aliased_columns('nr')
 
     @classmethod
     def empty(cls):
@@ -48,7 +55,7 @@ class Player(BaseModel):
         return self.rating < other.rating
 
     @classmethod
-    def select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None):
         query = """SELECT 
     p.id, p.last_name, p.first_name, p.PIN, p.rating, p.is_active, 
     c.id, c.name, 
@@ -61,7 +68,7 @@ LEFT JOIN country c2 ON c.country_id=c2.id
 LEFT JOIN `rank` r ON p.rank_id=r.id
 LEFT JOIN national_rank nr ON p.national_rank_id=nr.id"""
         query += cls.prepare_where(filters, 'p')
-        query += cls.prepare_order(order_by or [['rating', False]], 'p')
+        query += cls.prepare_order(order_by or [['p.rating', False]])
 
         result = execute_query(query)
 

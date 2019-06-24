@@ -4,11 +4,11 @@ from . import BaseModel, Country
 
 class City(BaseModel):
     table_name = 'city'
-    columns = {
-        'id': int,
-        'name': str,
-        'country_id': str,
-    }
+    columns = [
+        ('id', int),
+        ('name', str),
+        ('country_id', str),
+    ]
 
     def __init__(self, city_id, name, country: Country):
         self.id = city_id
@@ -19,11 +19,15 @@ class City(BaseModel):
         return self.name or ''
 
     @classmethod
+    def aliased_columns(cls):
+        return cls.make_aliased_columns('c') + Country.make_aliased_columns('c2')
+
+    @classmethod
     def empty(cls):
         return cls(None, None, Country.empty())
 
     @classmethod
-    def select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None):
         query = """SELECT
     c.id, c.name,
     c2.id, c2.name, c2.code

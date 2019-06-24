@@ -7,16 +7,15 @@ from . import BaseModel, Country, City
 
 class Tournament(BaseModel):
     table_name = 'tournament'
-    columns = {
-        'id': int,
-        'name': str,
-        'pin': str,
-        'date_start': date,
-        'date_end': date,
-        'is_ranked': bool,
-        'city_id': int,
-    }
-    columns_to_order = columns.keys()
+    columns = [
+        ('id', int),
+        ('name', str),
+        ('pin', str),
+        ('date_start', date),
+        ('date_end', date),
+        ('is_ranked', bool),
+        ('city_id', int),
+    ]
 
     def __init__(self, tournament_id, name, pin, date_start, date_end, is_ranked,
                  city: City):
@@ -32,11 +31,17 @@ class Tournament(BaseModel):
         return self.name
 
     @classmethod
+    def aliased_columns(cls):
+        return cls.make_aliased_columns('t') \
+               + City.make_aliased_columns('c') \
+               + Country.make_aliased_columns('c2')
+
+    @classmethod
     def empty(cls):
         return cls(None, None, None, None, None, None, City.empty())
 
     @classmethod
-    def select(cls, filters: Dict = None, order_by: Dict = None):
+    def execute_select(cls, filters: Dict = None, order_by: Dict = None):
         query = """SELECT
     t.id, t.name, t.PIN, t.date_start, t.date_end, t.is_ranked,
     c.id, c.name,
@@ -45,7 +50,7 @@ FROM tournament t
 LEFT JOIN city c ON t.city_id=c.id
 LEFT JOIN country c2 ON c.country_id=c2.id"""
         query += cls.prepare_where(filters, 't')
-        query += cls.prepare_order(order_by or [['date_start', False]], 't')
+        query += cls.prepare_order(order_by or [['t.date_start', False]])
 
         result = execute_query(query)
 

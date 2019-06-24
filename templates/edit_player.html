@@ -2,21 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>{{ player.full_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='forms.css') }}"/>
 </head>
 <body>
 <div class="header">
-    <a href="{{ url_for('players.player_info', player_id=player.id) }}" class="logo">{{ player.full_name }} ({{ player.rank.name }})</a>
+    <a href="{{ url_for('players.player_info', player_id=player.id) }}" class="logo">{{ player.full_name }} ({{
+        player.rank.name }})</a>
     <div class="header-right">
         <a href="{{ url_for('players.players') }}" class="active">Гравці</a>
         <a href="{{ url_for('tournaments.tournaments') }}">Турніри</a>
     </div>
 </div>
 <div class="form-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <p class="{{ category }}">{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
     {{ form | safe }}
 </div>
 </body>

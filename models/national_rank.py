@@ -3,11 +3,12 @@ from . import BaseModel
 
 
 class NationalRank(BaseModel):
-    columns = {
-        'id': int,
-        'name': str,
-        'abbreviate': str,
-    }
+    table_name = 'national_rank'
+    columns = [
+        ('id', int),
+        ('name', str),
+        ('abbreviate', str),
+    ]
 
     def __init__(self, national_rank_id, name, abbreviate):
         self.id = national_rank_id
@@ -22,7 +23,7 @@ class NationalRank(BaseModel):
         return cls(None, None, None)
 
     @classmethod
-    def select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None):
         query = "SELECT id, name, abbreviate FROM national_rank "
         query += cls.prepare_where(filters)
         query += cls.prepare_order(order_by)

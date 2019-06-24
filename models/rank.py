@@ -1,12 +1,14 @@
 from database import execute_query
 from . import BaseModel
 
+
 class Rank(BaseModel):
-    columns = {
-        'id': int,
-        'name': str,
-        'abbreviate': str,
-    }
+    table_name = 'rank'
+    columns = [
+        ('id', int),
+        ('name', str),
+        ('abbreviate', str),
+    ]
 
     def __init__(self, rank_id, name, abbreviate):
         self.id = rank_id
@@ -21,7 +23,7 @@ class Rank(BaseModel):
         return cls(None, None, None)
 
     @classmethod
-    def select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None):
         query = "SELECT id, name, abbreviate FROM `rank` "
         query += cls.prepare_where(filters)
         query += cls.prepare_order(order_by)

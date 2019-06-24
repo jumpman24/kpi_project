@@ -5,8 +5,6 @@ from flask.helpers import url_for, flash
 from models import City, Rank, NationalRank, Player, Participant
 
 from utils import (
-    render_table,
-    render_link,
     render_text_input_row,
     render_number_input_row,
     render_checkbox_row,
@@ -19,14 +17,14 @@ bp = Blueprint('players', __name__, url_prefix='/players')
 
 @bp.route('/', methods=['GET'])
 def players():
-    all_players = Player.select()
+    all_players = Player.execute_select()
     return render_template('player_list.html', players=all_players)
 
 
 @bp.route('/<int:player_id>', methods=['GET'])
 def player_info(player_id):
-    player = Player.select({'id': player_id})[0]
-    participant = Participant.select({'player_id': player.id}, [('t.date_start', False)])
+    player = Player.execute_select({'id': player_id})[0]
+    participant = Participant.execute_select({'player_id': player.id}, [('t.date_start', False)])
     return render_template('player_info.html', player=player, participant=participant)
 
 
@@ -80,7 +78,7 @@ def edit_player(player_id):
 
         return redirect(url_for('.player_info', player_id=player_id))
 
-    player = Player.select({'id': player_id})[0]
+    player = Player.execute_select({'id': player_id})[0]
 
     cities = City.select_attrs(['id', 'name'])
     ranks = Rank.select_attrs(['id', 'name'])

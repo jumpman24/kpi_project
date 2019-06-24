@@ -5,16 +5,15 @@ from . import BaseModel, Country, City, Rank, NationalRank, Player, Tournament
 
 class Participant(BaseModel):
     table_name = 'participant'
-    columns = {
-        'id': int,
-        'player_id': int,
-        'tournament_id': int,
-        'place': int,
-        'rank_id': int,
-        'rating_start': float,
-        'rating_end': float,
-    }
-    columns_to_order = ['t.date_start'] + list(columns.keys())
+    columns = [
+        ('id', int),
+        ('player_id', int),
+        ('tournament_id', int),
+        ('place', int),
+        ('rank_id', int),
+        ('rating_start', float),
+        ('rating_end', float),
+    ]
 
     def __init__(self, participant_id, place, rating_start, rating_end,
                  player: Player, tournament: Tournament, rank: Rank):
@@ -32,6 +31,19 @@ class Participant(BaseModel):
         return "-- no player --"
 
     @classmethod
+    def aliased_columns(cls):
+        return cls.make_aliased_columns('tp') \
+               + Tournament.make_aliased_columns('t') \
+               + City.make_aliased_columns('tc') \
+               + Country.make_aliased_columns('tc2') \
+               + Player.make_aliased_columns('p') \
+               + City.make_aliased_columns('c') \
+               + Country.make_aliased_columns('c2') \
+               + Rank.make_aliased_columns('r') \
+               + NationalRank.make_aliased_columns('nr') \
+               + Rank.make_aliased_columns('r2')
+
+    @classmethod
     def empty(cls):
         return cls(None, None, None, None, Player.empty(), Tournament.empty(), Rank.empty())
 
@@ -39,7 +51,7 @@ class Participant(BaseModel):
         return bool(self.player)
 
     @classmethod
-    def select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None):
         query = f"""SELECT
     tp.id, tp.place, tp.rating_start, tp.rating_end, 
 
@@ -98,7 +110,7 @@ LEFT JOIN `rank` r2 ON tp.rank_id=r2.id
             player_rank = Rank(*player_rank_values)
             player_national_rank = NationalRank(*player_national_rank_values)
             player = Player(*player_values, city=player_city, rank=player_rank,
-                             national_rank=player_national_rank)
+                            national_rank=player_national_rank)
 
             participant_rank = Rank(*participant_rank_values)
             participant = Participant(*participant_values, player=player, tournament=tournament,

@@ -2,11 +2,9 @@ import datetime
 
 import mysql.connector
 from flask import Blueprint, render_template, url_for, request, redirect, flash
-
-from models import City, Tournament, Pairing, TournamentTable
-from queries import (
-    select_pairing_query,
-)
+from collections import defaultdict
+from models import City, Tournament, Participant, Pairing, TournamentTable
+from parser import TournamentParser
 from utils import (
     render_table,
     render_link,
@@ -17,8 +15,6 @@ from utils import (
     render_file_row,
     render_submit
 )
-
-from parser import parse_tournament_table
 
 bp = Blueprint('tournaments', __name__, url_prefix='/tournaments')
 ALLOWED_EXTENSIONS = {'txt', 'csv'}
@@ -32,7 +28,7 @@ def allowed_file(filename):
 
 @bp.route('/', methods=['GET'])
 def tournaments():
-    tournament_list = Tournament.select()
+    tournament_list = Tournament.execute_select()
     table_data = []
     for idx, tournament in enumerate(tournament_list, start=1):
         tr_data = [render_link(url_for('.tournament_info', tournament_id=tournament.id), idx),
@@ -47,10 +43,20 @@ def tournaments():
 
 @bp.route('/<string:tournament_id>', methods=['GET'])
 def tournament_info(tournament_id):
-    tournament = Tournament.select({'id': tournament_id})[0]
-    pairings = Pairing.select({'tp.tournament_id': tournament_id})
-    tournament_table, length = TournamentTable(tournament, pairings).get_table()
-    return render_template('tournament_info.html', tournament=tournament, table=tournament_table, length=length)
+    tournament = Tournament.execute_select({'id': tournament_id})[0]
+    pairings = Pairing.execute_select({'tp.tournament_id': tournament_id})
+
+    aggregated_pairings = defaultdict(list)
+
+    for pairing in pairings:
+        aggregated_pairings[pairing.player].append(pairing.get_result())
+
+    rounds = max([len(games) for games in aggregated_pairings.values()])
+
+    return render_template('tournament_info.html',
+                           tournament=tournament,
+                           pairings=aggregated_pairings,
+                           rounds=rounds)
 
 
 @bp.route('/<string:tournament_id>/edit', methods=['GET', 'POST'])
@@ -71,7 +77,7 @@ def edit_tournament(tournament_id):
             flash(err.msg, 'isa_error')
             return redirect(edit_url)
 
-    tournament = Tournament.select({'id': tournament_id})[0]
+    tournament = Tournament.execute_select({'id': tournament_id})[0]
     cities = City.select_attrs(['id', 'name'])
 
     form = '\n'.join([
@@ -111,9 +117,20 @@ def add_tournament():
         insert_data['is_ranked'] = 'is_ranked' in insert_data.keys()
         insert_data['date_start'] = request.form.getlist('date_start')[0]
         insert_data['date_end'] = request.form.getlist('date_end')[0]
-        # tournament_id = insert_tournament_query(**update_data)
-        tournament_id = Tournament.execute_insert([insert_data])[0]
-        parse_tournament_table(file.read(), tournament_id, 0, 1, 2, 3, 4, 5, 7, 11)
+        tournament_id = None
+        try:
+            tournament_id = Tournament.execute_insert([insert_data])[0]
+            parser = TournamentParser(file.read(), tournament_id)
+            parser.run()
+        except Exception:
+            flash('Oops!', 'isa_error')
+            if tournament_id:
+                pairing_ids = Pairing.select_attrs(['id'], {'tp.tournament_id': tournament_id})
+                existing_participant_ids = Participant.select_attrs(['id'], {'tournament_id': tournament_id})
+                Pairing.execute_delete([p[0] for p in pairing_ids])
+                Participant.execute_delete([p[0] for p in existing_participant_ids])
+                Tournament.execute_delete([tournament_id])
+            return redirect(url_for('.add_tournament'))
         return redirect(url_for('.tournament_info', tournament_id=tournament_id))
 
     cities = City.select_attrs(['id', 'name'])
@@ -134,3 +151,18 @@ def add_tournament():
     ])
 
     return render_template('add_tournament.html', form=form)
+
+
+@bp.route('/<string:tournament_id>/delete', methods=['GET', 'POST'])
+def delete_tournament(tournament_id):
+    try:
+        pairing_ids = Pairing.select_attrs(['id'], {'tp.tournament_id': tournament_id})
+        existing_participant_ids = Participant.select_attrs(['id'], {'tournament_id': tournament_id})
+        Pairing.execute_delete([str(p[0]) for p in pairing_ids])
+        Participant.execute_delete([str(p[0]) for p in existing_participant_ids])
+        Tournament.execute_delete([str(tournament_id)])
+        flash('Турнір видалений', 'isa_success')
+        return redirect(url_for('.tournaments'))
+    except mysql.connector.Error as err:
+        flash(err.msg, 'isa_error')
+        return redirect(url_for('.tournament_info', tournament_id=tournament_id))

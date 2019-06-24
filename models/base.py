@@ -1,6 +1,6 @@
 from datetime import date
 from functools import total_ordering, reduce
-from typing import List, Dict, Sequence
+from typing import List, Dict, Tuple, Type
 
 from database import execute_query, prep_string, prep_int, prep_float, prep_bool, prep_date
 
@@ -8,8 +8,7 @@ from database import execute_query, prep_string, prep_int, prep_float, prep_bool
 @total_ordering
 class BaseModel:
     table_name = NotImplemented
-    columns = NotImplemented
-    columns_to_order = NotImplemented
+    columns: List[Tuple[str, Type]] = NotImplemented
 
     prepare_map = {
         str: prep_string,
@@ -40,6 +39,25 @@ class BaseModel:
     def __getattr__(self, item):
         return reduce(lambda obj, attr: obj.__getattribute__(attr), item.split('.'), self)
 
+    @classmethod
+    def aliased_columns(cls):
+        return cls.columns
+
+    @classmethod
+    def _is_valid_column(cls, col_name):
+        return any([col == col_name for col, _ in cls.aliased_columns()])
+
+    @staticmethod
+    def _make_column_string(columns: List[Tuple[str, Type]]):
+        return ', '.join([col for col, _ in columns])
+
+    @classmethod
+    def make_aliased_columns(cls, alias: str = ''):
+        if not alias:
+            return cls.columns
+
+        return [(f'{alias}.{col}', type_) for col, type_ in cls.columns]
+
     def get_attrs(self, *attrs):
         return [self.__getattr__(attr) for attr in attrs]
 
@@ -67,19 +85,18 @@ class BaseModel:
         return ''
 
     @classmethod
-    def prepare_order(cls, order_by: List[Sequence] = None, table_alias=''):
+    def prepare_order(cls, order_by: List[Tuple[str, bool]] = None):
         if not order_by:
             return ''
 
         valid_columns = []
         for col, asc in order_by:
 
-            if col in cls.columns_to_order:
-                key = table_alias + '.' + col if table_alias else col
+            if cls._is_valid_column(col):
                 if asc:
-                    valid_columns.append(key + ' ASC')
+                    valid_columns.append(col + ' ASC')
                 else:
-                    valid_columns.append(key + ' DESC')
+                    valid_columns.append(col + ' DESC')
 
         if valid_columns:
             return '\nORDER BY ' + ', '.join(valid_columns) + '\n'
@@ -87,17 +104,21 @@ class BaseModel:
         return ''
 
     @classmethod
+    def execute_select(cls, filters=None, order_by=None):
+        raise NotImplementedError
+
+    @classmethod
     def execute_insert(cls, data: List[Dict]):
 
         insert_values = []
         for row in data:
             values = []
-            for col in cls.columns.keys():
+            for col, _ in cls.columns:
                 values.append(cls._prepare_value(row.get(col, None)))
 
             insert_values.append('(' + ', '.join(values) + ')')
 
-        columns = '(' + ', '.join(cls.columns.keys()) + ')'
+        columns = '(' + cls._make_column_string(cls.columns) + ')'
         insert_values = ',\n'.join(insert_values)
         query = f'INSERT INTO {cls.table_name} {columns} VALUES \n{insert_values};'
         execute_query(query)
@@ -116,7 +137,7 @@ class BaseModel:
         valid_values = {}
 
         for col, value in data.items():
-            if col in cls.columns.keys():
+            if cls._is_valid_column(col):
                 valid_values[col] = cls._prepare_value(value)
 
         if not valid_values:
@@ -132,19 +153,15 @@ class BaseModel:
         if not ids:
             return
 
-        query_ids = ', '.join(ids)
+        query_ids = ', '.join([str(id) for id in ids])
         query = f'DELETE FROM {cls.table_name} WHERE id IN ({query_ids})'
 
         return execute_query(query)
-
-    @classmethod
-    def select(cls, filters=None, order_by=None):
-        raise NotImplementedError
 
     @classmethod
     def select_attrs(cls, attrs: List[str], filters: Dict = None):
         if not attrs:
             return
 
-        result = cls.select(filters)
+        result = cls.execute_select(filters)
         return [item.get_attrs(*attrs) for item in result]

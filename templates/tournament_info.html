@@ -12,6 +12,7 @@
     <a href="{{ url_for('tournaments.tournament_info', tournament_id=tournament.id) }}" class="logo">
         {{ tournament.name }}</a>
     <a href="{{ url_for('tournaments.edit_tournament', tournament_id=tournament.id) }}">Редагувати</a>
+    <a href="{{ url_for('tournaments.delete_tournament', tournament_id=tournament.id) }}" onclick="return confirm('Ви впевнені?');">Видалити</a>
     <div class="header-right">
         <a href="{{ url_for('players.players') }}">Гравці</a>
         <a href="{{ url_for('tournaments.tournaments') }}" class="active">Турніри</a>
@@ -26,6 +27,7 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
+
     <table class="ugd_table" style="width: 50%">
         <tr>
             <td class="col-25" style="text-align: right">Назва:</td>
@@ -51,18 +53,18 @@
             <th>Місто</th>
             <th>Ранг</th>
             <th>Рейтинг</th>
-            {% for i in range(length-5) %}
+            {% for i in range(rounds) %}
             <th>{{ i + 1 }}</th>
             {% endfor %}
         </tr>
-        {% for row in table %}
+        {% for player, rounds in pairings.items() %}
         <tr>
-            <td style="color: black">{{ row[0] }}</td>
-            <td style="color: black">{{ row[1] | safe }}</td>
-            <td style="color: black">{{ row[2] or '' }}</td>
-            <td style="color: black">{{ row[3] or '' }}</td>
-            <td style="color: black">{{ (row[4]|string).rstrip('0').rstrip('.') if row[4] else '' }}</td>
-            {% for item in row[5:] %}
+            <td style="color: black">{{ player.place }}</td>
+            <td style="color: black"><a href="{{ url_for('players.player_info', player_id=player.player.id) }}">{{ player.player.full_name }}</a></td>
+            <td style="color: black">{{ player.player.city.name or '' }}</td>
+            <td style="color: black">{{ player.rank.name or '' }}</td>
+            <td style="color: black">{{ (player.rating_start|string).rstrip('0').rstrip('.') if player.rating_start else '' }}</td>
+            {% for item in rounds %}
             {% if '+' in item|string %}
             <td style="color: green">{{ item }}</td>
             {% elif '-' in item|string %}
