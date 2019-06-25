@@ -1,5 +1,5 @@
-from typing import Dict
 from datetime import date
+from typing import Dict
 
 from database import execute_query
 from . import BaseModel, Country, City

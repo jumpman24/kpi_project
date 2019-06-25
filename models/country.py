@@ -24,9 +24,8 @@ class Country(BaseModel):
 
     @classmethod
     def execute_select(cls, filters=None, order_by=None):
-        query = "SELECT id, name, code FROM country "
-        query += cls.prepare_where(filters)
-        query += cls.prepare_order(order_by)
+        query = "SELECT id, name, code FROM country"
+        query += cls.prepare_where(filters) + cls.prepare_order(order_by)
 
         result = execute_query(query)
 

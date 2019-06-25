@@ -81,8 +81,7 @@ LEFT JOIN national_rank nr ON p.national_rank_id=nr.id
 
 LEFT JOIN `rank` r2 ON tp.rank_id=r2.id
     """
-        query += cls.prepare_where(filters, 'tp')
-        query += cls.prepare_order(order_by)
+        query += cls.prepare_where(filters, 'tp') + cls.prepare_order(order_by)
         result = execute_query(query)
 
         participants = []

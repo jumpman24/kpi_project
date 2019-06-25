@@ -32,10 +32,8 @@ class City(BaseModel):
     c.id, c.name,
     c2.id, c2.name, c2.code
 FROM city c
-LEFT JOIN country c2 ON c.country_id=c2.id
-"""
-        query += cls.prepare_where(filters, 'c')
-        query += cls.prepare_order(order_by)
+LEFT JOIN country c2 ON c.country_id=c2.id"""
+        query += cls.prepare_where(filters, 'c') + cls.prepare_order(order_by)
 
         result = execute_query(query)
 
@@ -48,4 +46,3 @@ LEFT JOIN country c2 ON c.country_id=c2.id
             cities.append(city)
 
         return cities
-

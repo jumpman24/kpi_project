@@ -3,7 +3,7 @@ import datetime
 import mysql.connector
 from flask import Blueprint, render_template, url_for, request, redirect, flash
 from collections import defaultdict
-from models import City, Tournament, Participant, Pairing, TournamentTable
+from models import City, Tournament, Participant, Pairing
 from parser import TournamentParser
 from utils import (
     render_table,

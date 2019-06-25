@@ -1,16 +1,16 @@
 from datetime import date
 from functools import total_ordering, reduce
-from typing import List, Dict, Tuple, Type
+from typing import List, Dict, Tuple, Type, Any
 
 from database import execute_query, prep_string, prep_int, prep_float, prep_bool, prep_date
 
 
 @total_ordering
 class BaseModel:
-    table_name = NotImplemented
+    table_name: str = NotImplemented
     columns: List[Tuple[str, Type]] = NotImplemented
 
-    prepare_map = {
+    prepare_map: dict = {
         str: prep_string,
         float: prep_float,
         int: prep_int,
@@ -40,15 +40,15 @@ class BaseModel:
         return reduce(lambda obj, attr: obj.__getattribute__(attr), item.split('.'), self)
 
     @classmethod
-    def aliased_columns(cls):
+    def aliased_columns(cls) -> List[Tuple[str, Type]]:
         return cls.columns
 
     @classmethod
-    def _is_valid_column(cls, col_name):
+    def _is_valid_column(cls, col_name) -> bool:
         return any([col == col_name for col, _ in cls.aliased_columns()])
 
     @staticmethod
-    def _make_column_string(columns: List[Tuple[str, Type]]):
+    def _make_column_string(columns: List[Tuple[str, Type]]) -> str:
         return ', '.join([col for col, _ in columns])
 
     @classmethod
@@ -58,15 +58,15 @@ class BaseModel:
 
         return [(f'{alias}.{col}', type_) for col, type_ in cls.columns]
 
-    def get_attrs(self, *attrs):
+    def get_attrs(self, *attrs) -> list:
         return [self.__getattr__(attr) for attr in attrs]
 
     @classmethod
-    def _prepare_value(cls, value):
+    def _prepare_value(cls, value, type_=None):
         if value is None:
             return 'NULL'
 
-        return cls.prepare_map[type(value)](value)
+        return cls.prepare_map[type_ or type(value)](value)
 
     @classmethod
     def prepare_where(cls, filters: Dict, table_alias=''):
@@ -113,8 +113,8 @@ class BaseModel:
         insert_values = []
         for row in data:
             values = []
-            for col, _ in cls.columns:
-                values.append(cls._prepare_value(row.get(col, None)))
+            for col, type_ in cls.columns:
+                values.append(cls._prepare_value(row.get(col, None), type_))
 
             insert_values.append('(' + ', '.join(values) + ')')
 
