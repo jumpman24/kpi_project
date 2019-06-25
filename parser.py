@@ -26,13 +26,13 @@ class TournamentParser:
         self.participants = {}
         self.rounds = []
 
-    def get_slices(self):
+    def _set_slices(self):
         row = self.data[0]
         start_indices = [0] + [i + 1 for i in range(len(row)) if row[i] == ' ']
         end_indices = [i for i in range(len(row)) if row[i] == ' '] + [len(row)]
         self.slices = [slice(*col) for col in zip(start_indices, end_indices)]
 
-    def get_indices(self):
+    def _set_indices(self):
         columns = self.data[1].split()
         indices = {
             'place': None,
@@ -186,8 +186,8 @@ class TournamentParser:
         Pairing.execute_insert(insert_data)
 
     def run(self):
-        self.get_slices()
-        self.get_indices()
+        self._set_slices()
+        self._set_indices()
 
         self.clean_tournament_data()
 

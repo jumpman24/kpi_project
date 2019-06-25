@@ -1,6 +1,6 @@
 from datetime import date
 from functools import total_ordering, reduce
-from typing import List, Dict, Tuple, Type, Any
+from typing import List, Dict, Tuple, Type, Any, Optional
 
 from database import execute_query, prep_string, prep_int, prep_float, prep_bool, prep_date
 
@@ -62,14 +62,14 @@ class BaseModel:
         return [self.__getattr__(attr) for attr in attrs]
 
     @classmethod
-    def _prepare_value(cls, value, type_=None):
+    def _prepare_value(cls, value, type_=None) -> str:
         if value is None:
             return 'NULL'
 
         return cls.prepare_map[type_ or type(value)](value)
 
     @classmethod
-    def prepare_where(cls, filters: Dict, table_alias=''):
+    def prepare_where(cls, filters: Dict = None, table_alias='') -> str:
         if not filters:
             return ''
 
@@ -85,7 +85,7 @@ class BaseModel:
         return ''
 
     @classmethod
-    def prepare_order(cls, order_by: List[Tuple[str, bool]] = None):
+    def prepare_order(cls, order_by: List[Tuple[str, bool]] = None) -> str:
         if not order_by:
             return ''
 
@@ -104,11 +104,11 @@ class BaseModel:
         return ''
 
     @classmethod
-    def execute_select(cls, filters=None, order_by=None):
+    def execute_select(cls, filters=None, order_by=None) -> List[Any]:
         raise NotImplementedError
 
     @classmethod
-    def execute_insert(cls, data: List[Dict]):
+    def execute_insert(cls, data: List[Dict]) -> List[Any]:
 
         insert_values = []
         for row in data:
@@ -130,7 +130,7 @@ class BaseModel:
         return last_ids
 
     @classmethod
-    def execute_update(cls, id, data: Dict = None):
+    def execute_update(cls, id: int, data: Dict = None) -> None:
         if not id or not data:
             return
 
@@ -149,7 +149,7 @@ class BaseModel:
         return execute_query(query)
 
     @classmethod
-    def execute_delete(cls, ids: List):
+    def execute_delete(cls, ids: List[str]) -> None:
         if not ids:
             return
 
@@ -159,7 +159,7 @@ class BaseModel:
         return execute_query(query)
 
     @classmethod
-    def select_attrs(cls, attrs: List[str], filters: Dict = None):
+    def select_attrs(cls, attrs: List[str], filters: Dict = None) -> Optional[List[Any]]:
         if not attrs:
             return
 
